@@ -7,7 +7,7 @@ import numpy as np
 import re
 import numpy as np
 
-loaded_model, loaded_vectorizer, loaded_scaler = load_Model.load_model('RandomForestModel\multi_target_forest.pkl')
+loaded_model, loaded_vectorizer, loaded_scaler = load_Model.load_model('RandomForestModel/multi_target_forest.pkl')
 
 
 def get_QueryResponse(text: str, model= loaded_model, vectorizer= loaded_vectorizer, scaler= loaded_scaler)-> np.ndarray:
