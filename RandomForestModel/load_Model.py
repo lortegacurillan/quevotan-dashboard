@@ -6,3 +6,7 @@ def load_model(filename):
     except Exception as e:
         return f"Error al cargar el modelo: {e}"
 
+
+
+
+loaded_model, loaded_vectorizer, loaded_scaler = load_model('RandomForestModel\multi_target_forest.pkl')
