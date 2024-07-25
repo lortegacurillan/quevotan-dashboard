@@ -3,6 +3,8 @@ import pandas as pd
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
+
 
 # Set the title and favicon that appear in the Browser's tab bar.
 st.set_page_config(
@@ -27,6 +29,7 @@ st.set_page_config(
 
 # -----------------------------------------------------------------------------
 # Draw the actual page
+
 # Backend simulado
 def backend_obtener_datos_etiquetas():
     """
@@ -41,14 +44,16 @@ def backend_obtener_datos_etiquetas():
 
 def backend_obtener_dataframe():
     """
-    Simula la obtención de un dataframe desde el backend.
+    Simula la obtención de un dataframe desde el backend con etiquetas en formato one-hot.
     
     Returns:
-        pd.DataFrame: Un dataframe con datos de texto y sus etiquetas.
+        pd.DataFrame: Un dataframe con datos de texto y etiquetas en formato one-hot.
     """
     data = pd.DataFrame({
-        'Texto': ['Texto 1', 'Texto 2', 'Texto 3', 'Texto 4', 'Texto 5', 'Texto 6', 'Texto 7', 'Texto 8', 'Texto 9', 'Texto 10','Texto 11', 'Texto 12', 'Texto 13', 'Texto 14', 'Texto 15', 'Texto 16', 'Texto 17', 'Texto 18', 'Texto 19', 'Texto 20'],
-        'Etiqueta': ['Etiqueta 1', 'Etiqueta 2', 'Etiqueta 3', 'Etiqueta 1', 'Etiqueta 2', 'Etiqueta 3', 'Etiqueta 1', 'Etiqueta 2', 'Etiqueta 3', 'Etiqueta 1', 'Etiqueta 2', 'Etiqueta 3', 'Etiqueta 1', 'Etiqueta 2', 'Etiqueta 3', 'Etiqueta 1', 'Etiqueta 2', 'Etiqueta 3', 'Etiqueta 1', 'Etiqueta 2']
+        'Texto': [f'Texto {i}' for i in range(1, 21)],
+        'Etiqueta 1': [1, 0, 1, 0, 1, 1, 0, 1, 0, 1] * 2,
+        'Etiqueta 2': [0, 1, 1, 1, 0, 1, 1, 0, 1, 0] * 2,
+        'Etiqueta 3': [1, 0, 1, 1, 0, 0, 1, 1, 0, 1] * 2
     })
     return data
 
@@ -86,7 +91,7 @@ def obtener_dataframe():
     Función que interactúa con el backend para obtener un dataframe.
     
     Returns:
-        pd.DataFrame: Un dataframe con datos de texto y sus etiquetas.
+        pd.DataFrame: Un dataframe con datos de texto y sus etiquetas en formato one-hot.
     """
     try:
         return backend_obtener_dataframe()
@@ -128,21 +133,64 @@ def actualizar_dataframe():
 
 # Vista "Etiquetas"
 if opcion == "Etiquetas":
-    st.title("Distribución de Etiquetas")
+    st.title("Distribución de Etiquetas y Relaciones")
     
+    # Actualizar datos de etiquetas
     if st.button("Actualizar datos de etiquetas"):
         etiquetas, cantidades = actualizar_datos_etiquetas()
     else:
         etiquetas, cantidades = obtener_datos_etiquetas()
     
     if etiquetas and cantidades:
-        # Crear gráfico de torta
-        fig, ax = plt.subplots()
-        ax.pie(cantidades, labels=etiquetas, autopct='%1.1f%%', startangle=90)
-        ax.axis('equal')  # Asegura que el gráfico de torta sea circular
+        # Crear gráfico de barras
+        st.subheader("Distribución de Etiquetas (Barras)")
         
-        # Mostrar gráfico de torta
-        st.pyplot(fig)
+        # Ordenar datos por cantidad
+        sorted_indices = sorted(range(len(cantidades)), key=lambda i: cantidades[i], reverse=True)
+        etiquetas_sorted = [etiquetas[i] for i in sorted_indices]
+        cantidades_sorted = [cantidades[i] for i in sorted_indices]
+        
+        # Mostrar gráfico de barras con Streamlit
+        st.bar_chart(pd.DataFrame({
+            'Etiqueta': etiquetas_sorted,
+            'Cantidad': cantidades_sorted
+        }).set_index('Etiqueta'))
+        
+        # Crear gráfico de combinaciones de etiquetas
+        st.subheader("Combinaciones de Etiquetas")
+        
+        # Obtener y procesar el DataFrame
+        data = obtener_dataframe()
+        
+        if not data.empty:
+            # Contar combinaciones de etiquetas
+            data_comb = data[['Etiqueta 1', 'Etiqueta 2', 'Etiqueta 3']].astype(str).agg('-'.join, axis=1)
+            combinaciones = data_comb.value_counts()
+            
+            # Mostrar gráfico de barras para combinaciones de etiquetas
+            fig, ax = plt.subplots(figsize=(10, 6))
+            combinaciones.plot(kind='bar', ax=ax)
+            ax.set_xlabel('Combinaciones de Etiquetas')
+            ax.set_ylabel('Cantidad')
+            ax.set_title('Combinaciones de Etiquetas')
+            plt.xticks(rotation=45)
+            st.pyplot(fig)
+            
+            # Crear gráfico de dispersión
+            st.subheader("Número de Etiquetas por Texto")
+            
+            # Contar el número de etiquetas por texto
+            num_etiquetas = data[['Etiqueta 1', 'Etiqueta 2', 'Etiqueta 3']].sum(axis=1)
+            
+            # Mostrar gráfico de dispersión
+            fig, ax = plt.subplots(figsize=(10, 6))
+            ax.scatter(data.index, num_etiquetas, alpha=0.7)
+            ax.set_xlabel('Índice del Texto')
+            ax.set_ylabel('Número de Etiquetas')
+            ax.set_title('Número de Etiquetas por Texto')
+            st.pyplot(fig)
+        else:
+            st.warning("No se pudo obtener el dataframe.")
     else:
         st.warning("No se pudieron obtener los datos de etiquetas.")
 
@@ -158,8 +206,13 @@ elif opcion == "Consulta":
     if not data.empty:
         # Campo de entrada de número de filas a mostrar
         num_filas = st.slider("Número de filas a mostrar:", 1, len(data), 10)
-        # Mostrar dataframe con el número de filas seleccionado
-        st.write("Datos del dataframe:", data.head(num_filas))
+        
+        # Obtener nombres de columnas y seleccionar columnas a mostrar
+        columnas = list(data.columns)
+        columnas_seleccionadas = st.multiselect("Selecciona las columnas a mostrar:", columnas, default=columnas[:4])
+        
+        # Mostrar dataframe con las columnas y el número de filas seleccionados
+        st.write("Datos del dataframe:", data[columnas_seleccionadas].head(num_filas))
     else:
         st.warning("No se pudo obtener el dataframe.")
     
