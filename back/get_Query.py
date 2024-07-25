@@ -5,46 +5,34 @@ from RandomForestModel.load_Model import load_model
 
 import numpy as np
 import re
-import numpy as np
 
+# Load model components
 loaded_model, loaded_vectorizer, loaded_scaler = load_model('RandomForestModel/multi_target_forest.pkl')
 
+if loaded_model is None or loaded_vectorizer is None or loaded_scaler is None:
+    raise ValueError("Failed to load model components. Check the logs for details.")
 
-def get_QueryResponse(text: str, model= loaded_model, vectorizer= loaded_vectorizer, scaler= loaded_scaler)-> np.ndarray:
-    # Pasar el texto a lower case y quitar los caracteres especiales
+def get_QueryResponse(text: str, model=loaded_model, vectorizer=loaded_vectorizer, scaler=loaded_scaler) -> np.ndarray:
+    # Process the text
     text_processed = text.lower()
     text_processed = re.sub(r'[^\w\s]', '', text_processed)
 
-    # Vectorización del texto
+    # Vectorize the text
     text_vectorized = vectorizer.transform([text_processed])
 
-    # Crear un vector nulo para 'votaciones_Nombre' ya que solo estamos probando el texto
+    # Create a null vector for 'votaciones_Nombre'
     total_features = scaler.n_features_in_
-
-    # Número de características del texto vectorizado
     text_features = text_vectorized.shape[1]
-
-    # Tamaño del vector nulo
     name_vector_size = total_features - text_features
+    name_vector = np.zeros((1, name_vector_size))
 
-    # Crear un vector nulo para 'votaciones_Nombre'
-    name_vector = np.zeros((1, name_vector_size))#name_vector_size = X_name.shape[1]
-    # Combinar las características de texto vectorizadas con las demás características
+    # Combine text features with the null vector
     Y_test_combined = np.hstack((name_vector, text_vectorized.toarray()))
 
-    # Escalar las características
+    # Scale the features
     Y_test_scaled = scaler.transform(Y_test_combined)
 
-    # Predicción de las etiquetas
+    # Predict the labels
     y_pred = model.predict(Y_test_scaled)
 
     return y_pred
- 
-
-
-
-query = """
-"""
-
-
-
