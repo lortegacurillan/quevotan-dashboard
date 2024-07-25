@@ -9,4 +9,4 @@ def load_model(filename):
 
 
 
-loaded_model, loaded_vectorizer, loaded_scaler = load_model('RandomForestModel/multi_target_forest.pkl')
+
