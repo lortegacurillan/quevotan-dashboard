@@ -1,18 +1,16 @@
-from ./RandomForestModel.load_Model import load_model
-
-load_model()
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from RandomForestModel import load_Model
 
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.multioutput import MultiOutputClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer
-
-loaded_model, loaded_vectorizer, loaded_scaler = load_model('model\multi_target_forest.pkl')
-
-
-
 import re
-def test(text: str, model: MultiOutputClassifier, vectorizer: TfidfVectorizer, scaler: StandardScaler) -> pd.DataFrame:
+import numpy as np
+
+loaded_model, loaded_vectorizer, loaded_scaler = load_Model.load_model('RandomForestModel\multi_target_forest.pkl')
+
+
+def get_QueryResponse(text: str, model= loaded_model, vectorizer= loaded_vectorizer, scaler= loaded_scaler)-> np.ndarray:
     # Pasar el texto a lower case y quitar los caracteres especiales
     text_processed = text.lower()
     text_processed = re.sub(r'[^\w\s]', '', text_processed)
@@ -21,8 +19,6 @@ def test(text: str, model: MultiOutputClassifier, vectorizer: TfidfVectorizer, s
     text_vectorized = vectorizer.transform([text_processed])
 
     # Crear un vector nulo para 'votaciones_Nombre' ya que solo estamos probando el texto
-    # Determinar el tamaño esperado del vector nulo
-    # Número total de características que el scaler espera
     total_features = scaler.n_features_in_
 
     # Número de características del texto vectorizado
@@ -37,9 +33,18 @@ def test(text: str, model: MultiOutputClassifier, vectorizer: TfidfVectorizer, s
     Y_test_combined = np.hstack((name_vector, text_vectorized.toarray()))
 
     # Escalar las características
-    X_test_scaled = scaler.transform(Y_test_combined)
+    Y_test_scaled = scaler.transform(Y_test_combined)
 
     # Predicción de las etiquetas
-    y_pred = model.predict(X_test_scaled)
+    y_pred = model.predict(Y_test_scaled)
 
     return y_pred
+ 
+
+
+
+query = """
+"""
+
+
+

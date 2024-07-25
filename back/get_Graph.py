@@ -11,7 +11,7 @@ def get_CombinationGraph(combinaciones:int, ):
     plt.xticks(rotation=45)
     return plt
 
-def get_CountGraph(data:pd.Dataframe,num_etiquetas:int, ):
+def get_CountGraph(data,num_etiquetas:int, ):
     ax = plt.subplots(figsize=(10, 6))
     ax.scatter(data.index, num_etiquetas, alpha=0.7)
     ax.set_xlabel('Índice del Texto')
@@ -19,4 +19,13 @@ def get_CountGraph(data:pd.Dataframe,num_etiquetas:int, ):
     ax.set_title('Número de Etiquetas por Texto')
     return plt
 
+def get_LabelCountGraph(labels, counts):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.bar(labels, counts)
+    ax.set_xlabel('Etiquetas')
+    ax.set_ylabel('Cantidad')
+    ax.set_title('Distribución de Etiquetas')
+    plt.xticks(rotation=45)
+    plt.tight_layout() 
+    return fig  
 

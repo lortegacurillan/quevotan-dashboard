@@ -1,5 +1,7 @@
 import pandas as pd
-from get_Data import get_Data
+#import la funcion get_Data del archivo get_Data.py
+from .get_Data import get_Data
+
 
 df = get_Data()
 
@@ -10,4 +12,6 @@ def get_LabelCount(df:pd.DataFrame):
     label_count = labels.values
     label_names = labels.index
     return label_names, label_count
+
+
 
