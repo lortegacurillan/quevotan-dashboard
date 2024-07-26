@@ -6,6 +6,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import streamlit as st
+import pandas as pd
 from back.get_Data import get_Data
 from back.get_Graph import get_CombinationGraph, get_CountGraph, get_LabelCountGraph
 from back.get_LabelCount import get_LabelCount
@@ -55,16 +56,20 @@ if opcion == "Etiquetas":
     
 
     # Crear gráfico de barras
-    st.subheader("Distribución de Etiquetas (Barras)")
+    st.subheader("Distribución de Etiquetas")
         
      #Grafico de barra  del arreglo etiqueta y cantidades 
 
     fig = get_LabelCountGraph(etiquetas, cantidades)
-    st.pyplot(fig)
     
     st.subheader("Combinaciones de Etiquetas")
-        
-   
+    
+    fig2 = get_CombinationGraph(data.iloc[:, 13:23])
+
+    st.subheader("Número de Etiquetas por Texto")
+
+    fig3 = get_CountGraph(data.iloc[:, 13:23])
+
 # Vista "Consulta"
 elif opcion == "Consulta":
     st.title("Consulta de Etiquetas")
@@ -97,7 +102,11 @@ elif opcion == "Consulta":
                 with st.spinner("Enviando texto al backend..."):
                     # Enviar texto al backend y recibir respuesta
                     respuesta = get_QueryResponse(texto_a_etiquetar)
-                    # Mostrar respuesta
-                    st.write("Respuesta del backend:", respuesta)
+                    # Convertir ndarray a DataFrame
+                    respuesta_df = pd.DataFrame(respuesta, columns=data.iloc[:, 13:23].columns)
+                    
+                    # Mostrar respuesta como tabla
+                    st.write("Respuesta del backend:")
+                    st.dataframe(respuesta_df)
             else:
                 st.write("Por favor, ingresa un texto.")
