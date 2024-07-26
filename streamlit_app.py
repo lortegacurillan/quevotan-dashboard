@@ -103,10 +103,10 @@ elif opcion == "Consulta":
                     # Enviar texto al backend y recibir respuesta
                     respuesta = get_QueryResponse(texto_a_etiquetar)
                     # Convertir ndarray a DataFrame
-                    respuesta_df = pd.DataFrame(respuesta, columns=data.iloc[:, 13:23].columns)
+                    #respuesta_df = pd.DataFrame(respuesta, columns=data.iloc[:, 13:23].columns)
                     
                     # Mostrar respuesta como tabla
                     st.write("Respuesta del backend:")
-                    st.dataframe(respuesta_df)
+                    st.dataframe(respuesta)
             else:
                 st.write("Por favor, ingresa un texto.")
