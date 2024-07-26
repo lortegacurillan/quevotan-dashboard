@@ -1,3 +1,5 @@
+import pandas as pd
+import streamlit as st
 import os
 import sys
 import logging
@@ -5,13 +7,14 @@ import numpy as np
 import re
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from RandomForestModel.load_Model import load_model
+from sklearn.utils import parallel_backend
 
 # Configurar logging
 logging.basicConfig(level=logging.DEBUG)
 
 # Cargar componentes del modelo
 loaded_model, loaded_vectorizer, loaded_scaler = load_model('RandomForestModel/multi_target_forest.pkl')
-
+loaded_model.n_jobs = 1  # Asegúrate de que el modelo use un solo trabajo
 
 def get_QueryResponse(text: str, model=loaded_model, vectorizer=loaded_vectorizer, scaler=loaded_scaler):
     # Procesar el texto
@@ -33,8 +36,9 @@ def get_QueryResponse(text: str, model=loaded_model, vectorizer=loaded_vectorize
     # Escalar las características
     Y_test_scaled = scaler.transform(Y_test_combined)
 
-    # Predecir las etiquetas
-    y_pred = model.predict(Y_test_scaled)
+    # Predecir las etiquetas con el backend threading
+    with parallel_backend('threading'):
+        y_pred = model.predict(Y_test_scaled)
 
     return y_pred
 
