@@ -1,10 +1,23 @@
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from RandomForestModel.load_Model import load_model
-
+#from RandomForestModel.load_Model import load_model
+import joblib
 import numpy as np
 import re
+
+
+def load_model(filename):
+    try:
+        loaded_objects = joblib.load(filename)
+        if isinstance(loaded_objects, tuple) and len(loaded_objects) == 3:
+            return loaded_objects
+        else:
+            raise ValueError("Loaded object is not a tuple with 3 elements.")
+    except Exception as e:
+        return None, None, None
+
+
 
 # Load model components
 loaded_model, loaded_vectorizer, loaded_scaler = load_model('RandomForestModel/multi_target_forest.pkl')
