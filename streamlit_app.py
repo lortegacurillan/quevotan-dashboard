@@ -102,6 +102,7 @@ elif opcion == "Consulta":
                 with st.spinner("Enviando texto al backend..."):
                     # Enviar texto al backend y recibir respuesta
                     respuesta = get_QueryResponse(texto_a_etiquetar)
+                    st.write(texto_a_etiquetar)
                     # Convertir ndarray a DataFrame
                     #respuesta_df = pd.DataFrame(respuesta, columns=data.iloc[:, 13:23].columns)
                     
