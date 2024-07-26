@@ -20,7 +20,7 @@ def load_model(filename):
 
 
 # Load model components
-loaded_model, loaded_vectorizer, loaded_scaler = load_model('RandomForestModel/multi_target_forest.pkl')
+loaded_model, loaded_vectorizer, loaded_scaler = load_model('back/multi_target_forest.pkl')
 
 if loaded_model is None or loaded_vectorizer is None or loaded_scaler is None:
     raise ValueError("Failed to load model components. Check the logs for details.")
