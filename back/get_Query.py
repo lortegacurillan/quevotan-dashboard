@@ -12,8 +12,6 @@ logging.basicConfig(level=logging.DEBUG)
 # Cargar componentes del modelo
 loaded_model, loaded_vectorizer, loaded_scaler = load_model('RandomForestModel/multi_target_forest.pkl')
 
-if loaded_model is None or loaded_vectorizer is None or loaded_scaler is None:
-    raise ValueError("Failed to load model components. Check the logs for details.")
 
 def get_QueryResponse(text: str, model=loaded_model, vectorizer=loaded_vectorizer, scaler=loaded_scaler) -> np.ndarray:
     try:
