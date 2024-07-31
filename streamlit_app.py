@@ -20,22 +20,22 @@ st.set_page_config(
     
 )
 
-# CSS para ajustar el ancho de los elementos y mejorar la responsividad
-st.markdown("""
-    <style>
-        .main .block-container {
-            max-width: 100%;
-            padding: 1rem 2rem;
-        }
-        .css-1lcbmhc {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-    </style>
-""", unsafe_allow_html=True)
+# # CSS para ajustar el ancho de los elementos y mejorar la responsividad
+# st.markdown("""
+#     <style>
+#         .main .block-container {
+#             max-width: 100%;
+#             padding: 1rem 2rem;
+#         }
+#         .css-1lcbmhc {
+#             flex: 1;
+#             display: flex;
+#             flex-direction: column;
+#             justify-content: center;
+#             align-items: center;
+#         }
+#     </style>
+# """, unsafe_allow_html=True)
 
 def backend_obtener_dataframe():
     try:
