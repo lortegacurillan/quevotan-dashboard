@@ -9,7 +9,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Conectar a MongoDB
-mongoose.connect('mongodb://admin:wfp6UL9eeSNN9ngb@164.77.114.243:27018/?authMechanism=DEFAULT', {
+mongoose.connect('', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => {
