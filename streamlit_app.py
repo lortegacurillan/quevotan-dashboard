@@ -20,22 +20,22 @@ st.set_page_config(
     
 )
 
-# # CSS para ajustar el ancho de los elementos y mejorar la responsividad
-# st.markdown("""
-#     <style>
-#         .main .block-container {
-#             max-width: 100%;
-#             padding: 1rem 2rem;
-#         }
-#         .css-1lcbmhc {
-#             flex: 1;
-#             display: flex;
-#             flex-direction: column;
-#             justify-content: center;
-#             align-items: center;
-#         }
-#     </style>
-# """, unsafe_allow_html=True)
+# CSS para ajustar el ancho de los elementos y mejorar la responsividad
+st.markdown("""
+    <style>
+        .main .block-container {
+            max-width: 100%;
+            padding: 1rem 2rem;
+        }
+        .css-1lcbmhc {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 def backend_obtener_dataframe():
     try:
@@ -63,16 +63,16 @@ def actualizar_dataframe():
     data = backend_obtener_dataframe()
     return data
 
-def mostrar_dataframe_responsivo(df, num_filas):
+def mostrar_dataframe_responsivo(df):#,
     max_columns = 5  # Número máximo de columnas para mostrar en una fila
     num_columns = len(df.columns)
     
     if num_columns > max_columns:
         for i in range(0, num_columns, max_columns):
             subset_df = df.iloc[:, i:i + max_columns]
-            st.dataframe(subset_df.head(num_filas))
+            st.dataframe(subset_df)
     else:
-        st.dataframe(df.head(num_filas))
+        st.dataframe(df)
 
 # Vista "Etiquetas"
 # Vista "About"
@@ -237,10 +237,22 @@ elif opcion == "Consulta":
                     respuesta = get_QueryResponse(texto_a_etiquetar)
                     # Convertir ndarray a DataFrame
                     respuesta_df = pd.DataFrame(respuesta, columns=data.iloc[:, 13:23].columns)
+
+                    # Filtrar columnas que tienen un valor de 1 en la primera fila
+                    columnas_con_uno = respuesta_df.loc[:, (respuesta_df == 1).iloc[0]]
+                    respuesta_df_filtrada = respuesta_df[columnas_con_uno.columns]
                     
                     # Mostrar respuesta como tabla
-                   # Mostrar respuesta como tabla
+                   
                     st.write("Resultado del etiquetado:")
-                    mostrar_dataframe_responsivo(respuesta_df, num_filas=1)
+                    colums_query = st.multiselect("Resultados:", list(respuesta_df_filtrada.columns), default=list(respuesta_df_filtrada.columns),disabled=True)
+                    colums_queryy = st.multiselect("Resultadoss:", list(respuesta_df_filtrada.columns), default=list(respuesta_df_filtrada.columns))
+                    mostrar_dataframe_responsivo(respuesta_df_filtrada)
+                    mostrar_dataframe_responsivo(respuesta_df)
+
+        
             else:
                 st.write("Por favor, ingresa un texto.")
+
+    
+        
