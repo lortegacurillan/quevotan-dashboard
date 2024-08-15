@@ -17,13 +17,13 @@ def show_consulta(data,actualizar_dataframe):
     st.title("Consulta de Etiquetas")
 
     if st.button("Actualizar datos del dataframe"):
-        data = actualizar_dataframe()
+        data = actualizar_dataframe('sampled')
     else:
-        data = actualizar_dataframe()
+        data = actualizar_dataframe('sampled')
 
     if not data.empty:
         # Campo de entrada de número de filas a mostrar
-        num_filas = st.slider("Número de filas a mostrar:", 1, len(data), 10)
+        inicio_filas, fin_filas = st.slider("Número de filas a mostrar:", 1, len(data), (1,10))
         st.write("En esta sección puedes consultar y etiquetar votaciones de la Cámara de Diputados de Chile. señalando la cantidad necesaria que quiera mostrar a continuación.")
         with st.form(key='multiselect_form'):
             columnas = list(data.columns)
@@ -33,7 +33,7 @@ def show_consulta(data,actualizar_dataframe):
         if 'first_load' not in st.session_state:
             st.session_state.first_load = True
 
-        if submit_button or st.session_state.first_load or num_filas:
+        if submit_button or st.session_state.first_load or inicio_filas:
             st.write("aqui se mostrara el resultado de las columnas seleccionadas y la cantidad de filas que se le asigno. siendo las columnas las siguientes:")
             st.write("votaciones_Nombre:estos son los nombres de las votaciones que se realizaron en la camara de diputados.")
             st.write("Texto:Este es el conjunto total de las opiniones realizadas en la camara de diputados.")
@@ -51,7 +51,8 @@ def show_consulta(data,actualizar_dataframe):
             ]
             st.write("Etiquetas seleccionadas: Estas son las etiquetas que se le asignaron a las votaciones realizadas en la camara de diputados. estas pueden ser:")
             st.markdown('\n'.join([f"{i+1}. {etiqueta}" for i, etiqueta in enumerate(etiquetas)]))
-            st.write("Datos del dataframe:", data[columnas_seleccionadas].head(num_filas))
+            st.write(f"Datos del dataframe (de la fila {inicio_filas} a la fila {fin_filas}):")
+            st.write(data[columnas_seleccionadas].iloc[inicio_filas-1:fin_filas])
             st.session_state.first_load = False
     else:
         st.warning("No se pudo obtener el dataframe.")

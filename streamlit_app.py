@@ -39,19 +39,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-def backend_obtener_dataframe(what:str)-> pd.DataFrame:
+def backend_obtener_dataframe(what)-> pd.DataFrame:
     try:
-        data = get_Data('sampled')
+        data = get_Data(what)
     except Exception as e:
         st.error(f"Error al obtener el dataframe: {e}")
     return data
 
-data = backend_obtener_dataframe()
+data = backend_obtener_dataframe('sampled')
 
 # Definir el menú vertical
 st.sidebar.image("src/quevotan.jpg", use_column_width=True)
 st.sidebar.title("Menú")
-opcion = st.sidebar.selectbox("Selecciona una vista:", ["About", "Etiquetas", "Consulta"])
+opcion = st.sidebar.selectbox("Selecciona una vista:", ["About", "Etiquetas", "Consulta","Pruebas"])
 
 # Mostrar la vista seleccionada
 if opcion == "About":

@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 
-def typewriter_effect(containers, texts, delay=0.02):
+def typewriter_effect(containers, texts, delay=0.01):
     """Función para simular el efecto de escritura en múltiples contenedores en paralelo."""
     texts = [list(text) for text in texts]
     lengths = [len(text) for text in texts]
@@ -117,12 +117,12 @@ def show_about():
         contact_container = st.empty()
 
     if not st.session_state.animation_shown:
+        st.session_state.animation_shown = True
         typewriter_effect(
             containers=[intro_container, project_container, methodology_container, team_container, impact_container, contact_container],
             texts=[intro_text, project_text, methodology_text, team_text, impact_text, contact_text],
             delay=0.02
         )
-        st.session_state.animation_shown = True
     else:
         # Mostrar el texto completo si la animación ya se ha mostrado
         for container, text in zip(
