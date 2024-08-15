@@ -3,7 +3,7 @@ import pandas as pd
 from .get_Data import get_Data
 
 
-df = get_Data()
+df = get_Data('sampled')
 
 
 # crea una funcion que toma las columnas del dataframe desde la posicion 14 a la 23 y cuenta la cantidad de veces que aparece cada etiqueta en todo el dataframe el retorno seran dos arreglos , el primero con el nombre de las etiquetas y el segundo con el conteo de su valor

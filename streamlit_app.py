@@ -13,6 +13,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from views.about import show_about
 from views.etiquetas import show_etiquetas
 from views.consulta import show_consulta
+from views.Pruebas import show_pruebas
+
 
 st.set_page_config(
     page_title='¿Que Votan? dashboard',
@@ -37,9 +39,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-def backend_obtener_dataframe():
+def backend_obtener_dataframe(what:str)-> pd.DataFrame:
     try:
-        data = get_Data()
+        data = get_Data('sampled')
     except Exception as e:
         st.error(f"Error al obtener el dataframe: {e}")
     return data
@@ -58,6 +60,8 @@ elif opcion == "Etiquetas":
     show_etiquetas(data)
 elif opcion == "Consulta":
     show_consulta(data,backend_obtener_dataframe)
+elif opcion == "Pruebas":
+    show_pruebas(backend_obtener_dataframe)
 
 # Selección del esquema de colores
 color_scheme = st.sidebar.selectbox("Selecciona el esquema de colores:", ["dark", "white", "lightgrey", "lightblue", "lightgreen"])
