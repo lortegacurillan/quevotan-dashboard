@@ -2,6 +2,24 @@ import streamlit as st
 import pandas as pd
 from back.get_Query import get_QueryResponse
 
+def load_data():
+    df = pd.read_excel("data\CorpusEtiquetado_Sampled.xlsx")
+    return df
+df = load_data()
+def search_votacion(texto, df):
+    if texto in df['votaciones_Nombre'].values:
+        # Columnas a devolver si se encuentra el texto
+        columnas = [
+            'Seguridad y Defensa', 'Relaciones Internacionales', 'Energía y Medioambiente',
+            'Justicia y Derechos Humanos', 'Educación', 'Políticas Sociales',
+            'Deporte, Cultura y Salud', 'Política Económica', 'Política Interna',
+            'Participación Ciudadana'
+        ]
+        resultado = df[df['votaciones_Nombre'] == texto][columnas].iloc[0]  # Solo el primer resultado
+        return resultado
+    else:
+        return "Esta votación no fue etiquetada por GPT."
+
 def mostrar_dataframe_responsivo(df):
     max_columns = 5
     num_columns = len(df.columns)
@@ -64,16 +82,22 @@ def show_consulta(data,actualizar_dataframe):
 
         if submit_button:
             if texto_a_etiquetar:
+                col1, col2 = st.columns(2)
                 with st.spinner("Enviando texto al backend..."):
                     respuesta = get_QueryResponse(texto_a_etiquetar)
+                    print(respuesta)
                     respuesta_df = pd.DataFrame(respuesta, columns=data.iloc[:, 13:23].columns)
 
                     columnas_con_uno = respuesta_df.loc[:, (respuesta_df == 1).iloc[0]]
                     respuesta_df_filtrada = respuesta_df[columnas_con_uno.columns]
+                    with col1:
+                        st.write("Este es nuestro Resultado realizado por nuestro modelo.")
+                        #colums_query = st.multiselect("Resultados:", list(respuesta_df_filtrada.columns), default=list(respuesta_df_filtrada.columns), disabled=True)
+                        mostrar_dataframe_responsivo(respuesta_df_filtrada)
+                    with col2:
+                        st.write("Y estas es la Etiqueta Generada por el GPT.")
+                        resultado = search_votacion(texto_a_etiquetar, df)
+                        st.write(resultado)
 
-                    st.write("Resultado del etiquetado:")
-                    colums_query = st.multiselect("Resultados:", list(respuesta_df_filtrada.columns), default=list(respuesta_df_filtrada.columns), disabled=True)
-                    mostrar_dataframe_responsivo(respuesta_df_filtrada)
-                    mostrar_dataframe_responsivo(respuesta_df)
             else:
                 st.write("Por favor, ingresa un texto.")
