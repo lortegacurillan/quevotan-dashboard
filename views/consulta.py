@@ -7,7 +7,6 @@ def load_data():
     return df
 df = load_data()
 
-
 def mostrar_dataframe_responsivo(df):
     max_columns = 5
     num_columns = len(df.columns)
