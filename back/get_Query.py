@@ -42,3 +42,18 @@ def get_QueryResponse(text: str, model=loaded_model, vectorizer=loaded_vectorize
 
     return y_pred
 
+def search_votacion(texto, df):
+    if texto in df['votaciones_Nombre'].values:
+        # Columnas a devolver si se encuentra el texto
+        columnas = [
+            'Seguridad y Defensa', 'Relaciones Internacionales', 'Energía y Medioambiente',
+            'Justicia y Derechos Humanos', 'Educación', 'Políticas Sociales',
+            'Deporte, Cultura y Salud', 'Política Económica', 'Política Interna',
+            'Participación Ciudadana'
+        ]
+        resultado = df[df['votaciones_Nombre'] == texto][columnas].iloc[0]  # Solo la primera coincidencia
+        columnas_con_uno = resultado[resultado == 1].index.tolist()  # Filtrar columnas con valor 1
+        resultado_invertido = resultado[columnas_con_uno].to_frame()  # Convertir a DataFrame
+        return resultado_invertido.transpose()  # Invertir columnas y filas
+    else:
+        return "Esta votación no fue etiquetada por GPT."

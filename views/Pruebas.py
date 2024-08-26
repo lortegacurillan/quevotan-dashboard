@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from back.get_Query import get_QueryResponse
+from back.get_Query import get_QueryResponse, search_votacion
 
 def mostrar_dataframe_responsivo(df):
     max_columns = 5
@@ -73,9 +73,10 @@ def show_pruebas(actualizar_dataframe):
                     columnas_con_uno = respuesta_df.loc[:, (respuesta_df == 1).iloc[0]]
                     respuesta_df_filtrada = respuesta_df[columnas_con_uno.columns]
 
-                    st.write("Resultado del etiquetado:")
-                    colums_query = st.multiselect("Resultados:", list(respuesta_df_filtrada.columns), default=list(respuesta_df_filtrada.columns), disabled=True)
+                    st.write("Resultado del etiquetado del modelo:")
                     mostrar_dataframe_responsivo(respuesta_df_filtrada)
-                    mostrar_dataframe_responsivo(respuesta_df)
+                    st.write("Resultado del etiquetado de GPT-3.5:")
+                    resultado = search_votacion(texto_a_etiquetar, data)
+                    st.write(resultado)
             else:
                 st.write("Por favor, ingresa un texto.")
