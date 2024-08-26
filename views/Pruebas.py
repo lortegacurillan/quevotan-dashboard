@@ -68,7 +68,7 @@ def show_pruebas(actualizar_dataframe):
             if texto_a_etiquetar:
                 with st.spinner("Enviando texto al backend..."):
                     respuesta = get_QueryResponse(texto_a_etiquetar)
-                    respuesta_df = pd.DataFrame(respuesta, columns=data.iloc[:, 13:23].columns)
+                    respuesta_df = pd.DataFrame(respuesta, columns=data.columns)
 
                     columnas_con_uno = respuesta_df.loc[:, (respuesta_df == 1).iloc[0]]
                     respuesta_df_filtrada = respuesta_df[columnas_con_uno.columns]
