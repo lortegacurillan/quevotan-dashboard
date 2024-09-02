@@ -12,6 +12,17 @@ df_mismatches = pd.DataFrame(columns=['Index', 'vote_name', 'GPT_Predictions', '
 
 # Function to check if GPT and RTM predictions are the same
 def check_UniqueLabels(df: pd.DataFrame, row, vote_Name):
+    '''
+    This function checks if the GPT and RTM predictions are the same for a given row in the DataFrame
+
+    Parameters:
+    df (pd.DataFrame): The DataFrame with the labels
+    row (pd.Series): The row to check
+    vote_Name (str): The name of the vote
+
+    Returns:
+    Tuple: A tuple with the row index, vote name, GPT predictions, and RTM predictions if they are different, otherwise None
+    '''
     prediction_GPT = row.iloc[13:23].values
     prediction_RTM = get_QueryResponse(vote_Name)
     
@@ -21,6 +32,17 @@ def check_UniqueLabels(df: pd.DataFrame, row, vote_Name):
         return None
 
 def add_ToDataFrame(mismatch_data, df_mismatches):
+    '''
+    This function adds mismatch data to the DataFrame
+
+    Parameters:
+    mismatch_data (Tuple): A tuple with the row index, vote name, GPT predictions, and RTM predictions
+    df_mismatches (pd.DataFrame): The DataFrame to add the mismatch data to
+
+    Returns:
+    pd.DataFrame: The updated DataFrame with the mismatch data
+    '''
+    
     row_index, vote_name, prediction_GPT, prediction_RTM = mismatch_data
 
     new_row = {
