@@ -7,3 +7,7 @@ def get_Data(what)-> pd.DataFrame:
     elif what == 'sampled':
         df = pd.read_excel('data/CorpusEtiquetado_Sampled.xlsx')
     return df
+
+def get_Mismatches()-> pd.DataFrame:
+    df = pd.read_excel('data/mismatches.xlsx')
+    return df
