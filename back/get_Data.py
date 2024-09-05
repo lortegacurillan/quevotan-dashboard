@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def get_Data(file_name:str)-> pd.DataFrame:
+def get_Data(file_name:str=None)-> pd.DataFrame:
     '''
     This function reads the data from the file_name and returns a DataFrame
 
@@ -15,6 +15,8 @@ def get_Data(file_name:str)-> pd.DataFrame:
         df = pd.read_excel('data/Test_DataWithLabels.xlsx')
     elif file_name == 'sampled':
         df = pd.read_excel('data/CorpusEtiquetado_Sampled.xlsx')
+    elif file_name == None:
+        return None
     return df
 
 def get_Mismatches()-> pd.DataFrame:

@@ -1,8 +1,17 @@
 import streamlit as st
 import time
 
-def typewriter_effect(containers, texts, delay=0.01):
-    """Función para simular el efecto de escritura en múltiples contenedores en paralelo."""
+def typewriter_Effect(containers, texts, delay=0.01):
+    '''function to simulate the typing effect on multiple containers in parallel.
+
+    Parameters:
+        containers (list): List of Streamlit containers to write to.
+        texts (list): List of texts to display.
+        delay (float, optional): Delay between each character. Defaults to 0.01.
+
+    Returns:
+        None
+    '''
     texts = [list(text) for text in texts]
     lengths = [len(text) for text in texts]
     max_length = max(lengths)
@@ -19,7 +28,13 @@ def typewriter_effect(containers, texts, delay=0.01):
 
     st.write()
 
-def show_about():
+def show_About():
+    '''
+    Function to display the About Us page.
+
+    Returns:
+        None
+    '''
     if 'animation_shown' not in st.session_state:
         st.session_state.animation_shown = False
 
@@ -118,7 +133,7 @@ def show_about():
 
     if not st.session_state.animation_shown:
         st.session_state.animation_shown = True
-        typewriter_effect(
+        typewriter_Effect(
             containers=[intro_container, project_container, methodology_container, team_container, impact_container, contact_container],
             texts=[intro_text, project_text, methodology_text, team_text, impact_text, contact_text],
             delay=0.02

@@ -2,7 +2,16 @@ import streamlit as st
 from back.get_LabelCount import get_LabelCount
 from back.get_Graph import get_LabelCountGraph, get_CountGraph, get_CombinationGraph
 
-def show_etiquetas(data):
+def show_Labels(data):
+    '''
+    Function to display the labels and relationships metrics.
+
+    Parameters:
+        data (pd.DataFrame): Dataframe with the data.
+
+    Returns:
+        None
+    '''
     st.title("Distribución de Etiquetas y Relaciones")
 
     # Actualizar datos de etiquetas

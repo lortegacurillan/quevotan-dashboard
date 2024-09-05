@@ -1,13 +1,22 @@
 import streamlit as st
 import pandas as pd
 from back.get_Query import get_QueryResponse, search_votacion
+from back.get_Data import get_Data
 
-def load_data():
-    df = pd.read_excel("data/CorpusEtiquetado_Sampled.xlsx")
-    return df
-df = load_data()
 
-def mostrar_dataframe_responsivo(df):
+df = get_Data('sampled')
+
+
+def get_ResponsiveDataframe(df: pd.DataFrame):
+    '''
+    Function to display a dataframe in a responsive way.
+
+    Parameters:
+        df (pd.DataFrame): Dataframe to display.
+
+    Returns:
+        None
+    '''
     max_columns = 5
     num_columns = len(df.columns)
 
@@ -18,7 +27,18 @@ def mostrar_dataframe_responsivo(df):
     else:
         st.dataframe(df)
 
-def show_consulta(data,actualizar_dataframe):
+def get_UniqueQuery(data,actualizar_dataframe):
+    '''
+    Function to display a dataframe in a responsive way.
+
+    Parameters:
+        data (pd.DataFrame): Dataframe to display.
+
+
+    Returns:
+        None    
+    '''
+
     st.title("Consulta de Etiquetas")
 
     if st.button("Actualizar datos del dataframe"):
@@ -80,7 +100,7 @@ def show_consulta(data,actualizar_dataframe):
                     with col1:
                         st.write("Este es nuestro Resultado realizado por nuestro modelo.")
                         #colums_query = st.multiselect("Resultados:", list(respuesta_df_filtrada.columns), default=list(respuesta_df_filtrada.columns), disabled=True)
-                        mostrar_dataframe_responsivo(respuesta_df_filtrada)
+                        get_ResponsiveDataframe(respuesta_df_filtrada)
                     with col2:
                         st.write("Y estas es la Etiqueta Generada por el GPT.")
                         resultado = search_votacion(texto_a_etiquetar, df)

@@ -10,10 +10,10 @@ from utils.theme import set_color_scheme
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Importar vistas
-from views.about import show_about
-from views.etiquetas import show_etiquetas
-from views.consulta import show_consulta
-from views.Pruebas import show_pruebas
+from views.view_About import show_About
+from views.view_LabelsMetrics import show_Labels
+from views.view_UniqueQuery import get_UniqueQuery
+from views.view_TestData import show_TestData
 
 
 st.set_page_config(
@@ -39,14 +39,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-def backend_obtener_dataframe(what)-> pd.DataFrame:
-    try:
-        data = get_Data(what)
-    except Exception as e:
-        st.error(f"Error al obtener el dataframe: {e}")
-    return data
+data = get_Data('sampled')
 
-data = backend_obtener_dataframe('sampled')
 
 # Definir el menú vertical
 st.sidebar.image("src/quevotan.jpg", use_column_width=True)
@@ -55,14 +49,11 @@ opcion = st.sidebar.selectbox("Selecciona una vista:", ["About", "Etiquetas", "C
 
 # Mostrar la vista seleccionada
 if opcion == "About":
-    show_about()
+    show_About()
 elif opcion == "Etiquetas":
-    show_etiquetas(data)
+    show_Labels(data)
 elif opcion == "Consulta":
-    show_consulta(data,backend_obtener_dataframe)
+    get_UniqueQuery(data,get_Data)
 elif opcion == "Pruebas":
-    show_pruebas(backend_obtener_dataframe)
+    show_TestData(get_Data)
 
-# Selección del esquema de colores
-color_scheme = st.sidebar.selectbox("Selecciona el esquema de colores:", ["dark", "white", "lightgrey", "lightblue", "lightgreen"])
-set_color_scheme(color_scheme)
