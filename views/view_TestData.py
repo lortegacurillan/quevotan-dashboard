@@ -1,25 +1,27 @@
 import streamlit as st
 import pandas as pd
 from back.get_Query import get_QueryResponse, search_votacion
+from .view_UniqueQuery import get_ResponsiveDataframe
 
-def mostrar_dataframe_responsivo(df):
-    max_columns = 5
-    num_columns = len(df.columns)
 
-    if num_columns > max_columns:
-        for i in range(0, num_columns, max_columns):
-            subset_df = df.iloc[:, i:i + max_columns]
-            st.dataframe(subset_df)
-    else:
-        st.dataframe(df)
 
-def show_pruebas(actualizar_dataframe):
+def show_TestData(update_Dataframe):
+    '''
+    Function to display the test data and query the model.
+
+    Parameters:
+        update_Dataframe (function): Function to update the dataframe.
+
+    Returns:
+        None
+    
+    '''
     st.title("Consulta de Etiquetas")
 
     if st.button("Actualizar datos del dataframe"):
-        data = actualizar_dataframe('Prueba')
+        data = update_Dataframe('Prueba')
     else:
-        data = actualizar_dataframe('Prueba')
+        data = update_Dataframe('Prueba')
 
     if not data.empty:
         # Campo de entrada de número de filas a mostrar
@@ -74,7 +76,7 @@ def show_pruebas(actualizar_dataframe):
                     respuesta_df_filtrada = respuesta_df[columnas_con_uno.columns]
 
                     st.write("Resultado del etiquetado del modelo:")
-                    mostrar_dataframe_responsivo(respuesta_df_filtrada)
+                    get_ResponsiveDataframe(respuesta_df_filtrada)
                     st.write("Resultado del etiquetado de GPT-3.5:")
                     resultado = search_votacion(texto_a_etiquetar, data)
                     st.write(resultado)

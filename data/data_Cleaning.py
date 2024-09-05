@@ -1,7 +1,8 @@
 import pandas as pd
+from back.get_Data import get_Data
 
 # Cargar el archivo Excel
-df = pd.read_excel('data\Test_DataWithLabels.xlsx')
+df = get_Data('Prueba')
 
 # Eliminar el prefijo '_x000D_\n' de la primera columna
 # Asegúrate de que 'Columna1' es el nombre de la primera columna o usa df.iloc[:, 0] para seleccionar por índice
