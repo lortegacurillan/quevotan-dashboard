@@ -14,7 +14,8 @@ from views.view_About import show_About
 from views.view_LabelsMetrics import show_Labels
 from views.view_UniqueQuery import get_UniqueQuery
 from views.view_TestData import show_TestData
-
+from views.view_Mismatches import show_mismatches
+from views.view_UserSubmit import labeling_view
 
 st.set_page_config(
     page_title='¿Que Votan? dashboard',
@@ -40,12 +41,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 data = get_Data('sampled')
-
+data_Mismatches = get_Data('mismatches')
 
 # Definir el menú vertical
 st.sidebar.image("src/quevotan.jpg", use_column_width=True)
 st.sidebar.title("Menú")
-opcion = st.sidebar.selectbox("Selecciona una vista:", ["About", "Etiquetas", "Consulta","Pruebas"])
+opcion = st.sidebar.selectbox("Selecciona una vista:", ["About", "Etiquetas", "Consulta","Pruebas","Comparativa"])
 
 # Mostrar la vista seleccionada
 if opcion == "About":
@@ -56,4 +57,9 @@ elif opcion == "Consulta":
     get_UniqueQuery(data,get_Data)
 elif opcion == "Pruebas":
     show_TestData(get_Data)
+elif opcion == "Comparativa":
+    show_mismatches(data,data_Mismatches)
+elif opcion == "Test":
+    labeling_view(data)
+
 
