@@ -15,10 +15,8 @@ def get_Data(file_name:str=None)-> pd.DataFrame:
         df = pd.read_excel('data/Test_DataWithLabels.xlsx')
     elif file_name == 'sampled':
         df = pd.read_excel('data/CorpusEtiquetado_Sampled.xlsx')
+    elif file_name == 'mismatches':
+        df = pd.read_excel('data/expanded_mismatches.xlsx')
     elif file_name == None:
         return None
-    return df
-
-def get_Mismatches()-> pd.DataFrame:
-    df = pd.read_excel('data/mismatches.xlsx')
     return df
