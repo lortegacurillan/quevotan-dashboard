@@ -84,3 +84,37 @@ def get_LabelCountGraph(labels, counts):
     fig.update_yaxes(title='Cantidad')
 
     st.plotly_chart(fig)
+
+def get_ComparisonGraph(data: pd.DataFrame, mismatches_df: pd.DataFrame):
+    '''
+    Display a bar chart comparing total votes and mismatches between RTM and GPT-3.5 predictions.
+
+    Parameters:
+    data (pd.DataFrame): The full DataFrame containing all votes and their labels.
+    mismatches_df (pd.DataFrame): The DataFrame containing votes where RTM and GPT-3.5 predictions differed.
+
+    Returns:
+    None
+    '''
+    # Calculate total votes and mismatches
+    total_votes = len(data)
+    mismatches = len(mismatches_df)
+    matches = total_votes - mismatches
+
+    # Create a DataFrame for plotting
+    comparison_df = pd.DataFrame({
+        'Categoría': ['Votos Totales', 'Coincidencias', 'Desajustes'],
+        'Cantidad': [total_votes, matches, mismatches]
+    })
+
+    # Create the bar chart using Plotly Express
+    fig = px.bar(
+        comparison_df,
+        x='Categoría',
+        y='Cantidad',
+        title='Comparación de Votos Totales vs. Coincidencias y Desajustes',
+        labels={'Cantidad': 'Número de Votos', 'Categoría': 'Categoría'}
+    )
+
+    # Display the plot
+    st.plotly_chart(fig)

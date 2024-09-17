@@ -24,7 +24,7 @@ def get_GPTLabelCount(df:pd.DataFrame):
     return label_names, label_count
 
 def get_RTMLabelCount(df:pd.DataFrame):
-    labels = df.iloc[:, 13:23].sum().sort_values(ascending=False)
+    labels = df.iloc[:, 12:22].sum().sort_values(ascending=False)
     label_count = labels.values
     label_names = labels.index
     return label_names, label_count
