@@ -15,6 +15,7 @@ from views.view_LabelsMetrics import show_Labels
 from views.view_UniqueQuery import get_UniqueQuery
 from views.view_TestData import show_TestData
 from views.view_Mismatches import show_mismatches
+from views.view_UserSubmit import labeling_view
 
 st.set_page_config(
     page_title='¿Que Votan? dashboard',
@@ -58,5 +59,7 @@ elif opcion == "Pruebas":
     show_TestData(get_Data)
 elif opcion == "Comparativa":
     show_mismatches(data,data_Mismatches)
+elif opcion == "Test":
+    labeling_view(data)
 
 
