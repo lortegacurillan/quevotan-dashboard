@@ -1,17 +1,23 @@
 import os
 import pandas as pd
+from sqlalchemy import create_engine
+from back.get_DB_Connection import DATABASE_URI
 
-# Define the path to the mismatches file
-input_file_path = os.path.join('./data/', 'filtered_mismatches.xlsx')
-output_file_path = os.path.join('./data/', 'expanded_mismatches.xlsx')
+# Initialize database connection
+engine = create_engine(DATABASE_URI)
 
-# Load the mismatches DataFrame from the Excel file
-df_mismatches = pd.read_excel(input_file_path)
+# Define the input and output table names
+input_table_name = 'filtered_mismatches'
+output_table_name = 'expanded_mismatches'
+
+# Load the mismatches DataFrame from the database table
+df_mismatches = pd.read_sql_table(input_table_name, con=engine)
 print(df_mismatches.columns)
+
 # List of labels
-labels = ["Seguridad y Defensa", "Relaciones Internacionales", "Energía y Medioambiente", 
-          "Justicia y Derechos Humanos", "Educación", "Políticas Sociales", 
-          "Deporte, Cultura y Salud", "Política Económica", "Política Interna", 
+labels = ["Seguridad y Defensa", "Relaciones Internacionales", "Energía y Medioambiente",
+          "Justicia y Derechos Humanos", "Educación", "Políticas Sociales",
+          "Deporte, Cultura y Salud", "Política Económica", "Política Interna",
           "Participación Ciudadana"]
 
 # Create columns for GPT and RTM predictions
@@ -21,10 +27,13 @@ rtm_columns = [f"RTM_{label}" for label in labels]
 # Function to clean and convert string lists into actual lists of integers
 def clean_and_convert(value):
     if isinstance(value, str):
-        # Remove spaces and brackets, then split by space
-        value = value.replace("[", "").replace("]", "").split()
-        return [int(x) for x in value]  # Convert the cleaned-up string into a list of integers
-    return value  # If it's already a list, return as is
+        # Remove brackets and split by commas or spaces
+        value = value.strip('[]')
+        value = value.replace(',', ' ').split()
+        return [int(x) for x in value]
+    elif isinstance(value, list):
+        return value
+    return []
 
 # Apply the cleaning and conversion function to each prediction
 df_mismatches['prediction_GPT'] = df_mismatches['prediction_GPT'].apply(clean_and_convert)
@@ -34,10 +43,9 @@ df_mismatches['prediction_RTM'] = df_mismatches['prediction_RTM'].apply(clean_an
 gpt_df = pd.DataFrame(df_mismatches['prediction_GPT'].to_list(), columns=gpt_columns)
 rtm_df = pd.DataFrame(df_mismatches['prediction_RTM'].to_list(), columns=rtm_columns)
 
-# Concatenate the 'Index', 'vote_name', GPT predictions, and RTM predictions into a single DataFrame
+# Concatenate the 'index', 'vote_Name', GPT predictions, and RTM predictions into a single DataFrame
 final_df = pd.concat([df_mismatches[['index', 'vote_Name']], gpt_df, rtm_df], axis=1)
 
-# Save the resulting DataFrame to an Excel file
-final_df.to_excel(output_file_path, index=False)
-
-print(f"Transformed data saved to '{output_file_path}'")
+# Write the resulting DataFrame to a new table in the database
+final_df.to_sql(output_table_name, con=engine, if_exists='replace', index=False)
+print(f"Transformed data saved to table '{output_table_name}' in the database.")
