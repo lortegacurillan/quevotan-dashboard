@@ -7,7 +7,7 @@ from back.get_Data import get_Data
 import streamlit as st
 from back.get_Query import get_QueryResponse
 
-df = get_Data('sampled')
+df = get_Data('corpus_etiquetado_sampled')
 df_mismatches = pd.DataFrame(columns=['Index', 'vote_name', 'GPT_Predictions', 'RTM_Predictions'])
 
 # Function to check if GPT and RTM predictions are the same

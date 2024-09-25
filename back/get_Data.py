@@ -1,22 +1,26 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from back.get_DB_Connection import DATABASE_URI
+from sqlalchemy import create_engine
 import pandas as pd
 
-
-def get_Data(file_name:str=None)-> pd.DataFrame:
+def get_Data(table_name: str = None) -> pd.DataFrame:
     '''
-    This function reads the data from the file_name and returns a DataFrame
+    Fetch data from the PostgreSQL database.
 
     Parameters:
-    file_name (str): The name of the file to read the data from
+    table_name (str): The name of the table to fetch data from.
 
     Returns:
-    pd.DataFrame: The DataFrame with the data from the file
+    pd.DataFrame: The DataFrame with data from the specified table.
     '''
-    if file_name == 'Prueba':
-        df = pd.read_excel('data/Test_DataWithLabels.xlsx')
-    elif file_name == 'sampled':
-        df = pd.read_excel('data/CorpusEtiquetado_Sampled.xlsx')
-    elif file_name == 'mismatches':
-        df = pd.read_excel('data/expanded_mismatches.xlsx')
-    elif file_name == None:
+    if table_name is None:
         return None
+
+    # Initialize database connection
+    engine = create_engine(DATABASE_URI)
+
+    # Read data from the table
+    df = pd.read_sql_table(table_name, con=engine)
     return df

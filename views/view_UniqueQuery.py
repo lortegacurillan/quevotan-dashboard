@@ -4,7 +4,7 @@ from back.get_Query import get_QueryResponse, search_votacion
 from back.get_Data import get_Data
 
 
-df = get_Data('sampled')
+df = get_Data('corpus_etiquetado_sampled')
 
 
 def get_ResponsiveDataframe(df: pd.DataFrame):

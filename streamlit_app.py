@@ -40,8 +40,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-data = get_Data('sampled')
-data_Mismatches = get_Data('mismatches')
+data = get_Data('corpus_etiquetado_sampled')
+data_Mismatches = get_Data('expanded_mismatches')
 
 # Definir el menú vertical
 st.sidebar.image("src/quevotan.jpg", use_column_width=True)
