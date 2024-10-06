@@ -19,9 +19,9 @@ def show_TestData(update_Dataframe):
     st.title("Consulta de Etiquetas")
 
     if st.button("Actualizar datos del dataframe"):
-        data = update_Dataframe('Prueba')
+        data = update_Dataframe('test_data_with_labels')
     else:
-        data = update_Dataframe('Prueba')
+        data = update_Dataframe('test_data_with_labels')
 
     if not data.empty:
         # Campo de entrada de número de filas a mostrar

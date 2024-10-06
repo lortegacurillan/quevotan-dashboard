@@ -1,6 +1,6 @@
 import pandas as pd
 from sqlalchemy import create_engine
-from back.get_DB_Connection import DATABASE_URI
+from get_DB_Connection import DATABASE_URI
 # Initialize database connection
 engine = create_engine(DATABASE_URI)
 

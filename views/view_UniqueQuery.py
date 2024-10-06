@@ -42,9 +42,9 @@ def get_UniqueQuery(data,actualizar_dataframe):
     st.title("Consulta de Etiquetas")
 
     if st.button("Actualizar datos del dataframe"):
-        data = actualizar_dataframe('sampled')
+        data = actualizar_dataframe('corpus_etiquetado_sampled')
     else:
-        data = actualizar_dataframe('sampled')
+        data = actualizar_dataframe('corpus_etiquetado_sampled')
 
     if not data.empty:
         # Campo de entrada de número de filas a mostrar
