@@ -73,4 +73,14 @@ def show_mismatches(data: pd.DataFrame, mismatches_df: pd.DataFrame):
     st.subheader("Resumen de Métricas")
     st.write(resumen_fallos)
     st.write(resumen_precision)
+    # Identify classes with classification problems
+    st.subheader("Identificación de Clases con Problemas de Clasificación")
+    threshold_fallos = 30  # Definir un umbral para considerar una clase con problemas de clasificación
+    clases_problemas = frecuencias_df[frecuencias_df['Porcentaje_Fallos'] > threshold_fallos]
+
+    if not clases_problemas.empty:
+        st.write(f"Las siguientes clases presentan problemas de clasificación (porcentaje de fallos superior a {threshold_fallos}%):")
+        st.dataframe(clases_problemas, use_container_width=True)
+    else:
+        st.write("No se identificaron clases con problemas significativos de clasificación.")
 
