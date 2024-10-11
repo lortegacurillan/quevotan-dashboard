@@ -16,6 +16,7 @@ from views.view_UniqueQuery import get_UniqueQuery
 from views.view_TestData import show_TestData
 from views.view_Mismatches import show_mismatches
 from views.view_UserLabeling import show_UserLabeling
+from views.view_UserModelRanking import show_UserModelRanking
 
 st.set_page_config(
     page_title='¿Que Votan? dashboard',
@@ -42,11 +43,12 @@ st.markdown("""
 
 data = get_Data('corpus_etiquetado_sampled')
 data_Mismatches = get_Data('expanded_mismatches')
+data_TotalPredictions = get_Data('gpt_rtm_comparison')
 
 # Definir el menú vertical
 st.sidebar.image("src/quevotan.jpg", use_column_width=True)
 st.sidebar.title("Menú")
-opcion = st.sidebar.selectbox("Selecciona una vista:", ["About", "Etiquetas", "Consulta","Pruebas","Comparativa", "Formulario"])
+opcion = st.sidebar.selectbox("Selecciona una vista:", ["About", "Etiquetas", "Consulta","Pruebas","Comparativa", "Formulario", "Ranking"])
 
 # Mostrar la vista seleccionada
 if opcion == "About":
@@ -61,5 +63,7 @@ elif opcion == "Comparativa":
     show_mismatches(data,data_Mismatches)
 elif opcion == "Formulario":
     show_UserLabeling(data)
+elif opcion == "Ranking":
+    show_UserModelRanking(data_TotalPredictions)
 
 

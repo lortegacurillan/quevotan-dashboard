@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 import random
-from back.post_Pg_Data import save_Data_To_Postgres
+from back.post_HumanLabelData import save_Data_To_Postgres
 
 # Function to get a random vote
 def get_Random_Vote(data: pd.DataFrame) -> int:
