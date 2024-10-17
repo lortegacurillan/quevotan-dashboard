@@ -12,10 +12,9 @@ class UserModelRanking(Base):
     __tablename__ = 'user_model_ranking'
     
     submission_id = Column(Integer, primary_key=True, autoincrement=True)
+    vote_index = Column(Integer, nullable=False)  # New column for vote index
     vote_name = Column(String, nullable=False)
-    gpt_labels = Column(Text, nullable=False)  # We store GPT labels as a JSON-encoded string
-    rtm_labels = Column(Text, nullable=False)  # We store RTM labels as a JSON-encoded string
-    chosen_model = Column(String, nullable=False)
+    chosen_model = Column(Integer, nullable=False)  # Now stores 0 (GPT) or 1 (RTM)
     user_comment = Column(Text)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
@@ -31,10 +30,9 @@ def save_UserModelRanking_To_Postgres(data_To_Send: dict):
     try:
         # Creating a new entry
         new_entry = UserModelRanking(
+            vote_index=data_To_Send['vote_index'],  # Include vote index
             vote_name=data_To_Send['vote_name'],
-            gpt_labels=str(data_To_Send['gpt_labels']),  # Convert the dictionary to a string (JSON format)
-            rtm_labels=str(data_To_Send['rtm_labels']),  # Convert the dictionary to a string (JSON format)
-            chosen_model=data_To_Send['chosen_model'],
+            chosen_model=data_To_Send['chosen_model'],  # Store 0 for Model 1 (GPT) and 1 for Model 2 (RTM)
             user_comment=data_To_Send['user_comment'],
             timestamp=datetime.now()
         )

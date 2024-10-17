@@ -8,9 +8,17 @@ def get_Random_Vote(data: pd.DataFrame) -> int:
     random_index = random.randint(0, len(data) - 1)
     return random_index
 
+# Function to filter the prediction columns to show only categories with a value of 1
+def filter_predictions(predictions, labels):
+    # Get the columns that have a value of 1
+    filtered_predictions = predictions.loc[:, (predictions == 1).any()]
+    # Map the column names to the generic labels based on their original index
+    filtered_predictions.columns = [labels[i] for i in range(len(filtered_predictions.columns))]
+    return filtered_predictions
+
 # Main view function for UserModelRanking
 def show_UserModelRanking(data: pd.DataFrame):
-    st.title("Comparación de Etiquetas: GPT-3.5 vs. RTM")
+    st.title("Comparación de Etiquetas: Modelos")
 
     # Define the labels (these should match the ones in the DataFrame)
     labels = [
@@ -23,6 +31,7 @@ def show_UserModelRanking(data: pd.DataFrame):
     if "selected_vote_index" not in st.session_state:
         vote_index = get_Random_Vote(data)
         st.session_state.selected_vote_index = vote_index
+        st.session_state.selected_model = None  # Track which model the user selects
 
     # Get the current vote data
     vote_index = st.session_state.selected_vote_index
@@ -33,23 +42,24 @@ def show_UserModelRanking(data: pd.DataFrame):
     gpt_labels = vote_row[[f"{label}_GPT" for label in labels]]  # Extract GPT prediction columns
     rtm_labels = vote_row[[f"{label}_RTM" for label in labels]]  # Extract RTM prediction columns
 
+    # Filter GPT and RTM predictions and rename the columns for display
+    filtered_gpt_labels = filter_predictions(pd.DataFrame(gpt_labels).T, labels)
+    filtered_rtm_labels = filter_predictions(pd.DataFrame(rtm_labels).T, labels)
+
     # Display the vote name
     st.markdown(f"### {vote_name}")
 
-    # Display GPT-3.5 and RTM labels side by side in editable text fields
-    st.write("### Etiquetas propuestas por GPT-3.5")
-    edited_gpt_labels = {}
-    for idx, label in enumerate(gpt_labels.index):
-        edited_gpt_labels[label] = st.text_input(f"GPT-3.5 - {label}", gpt_labels[label])
+    # Display Model 1 (GPT) predictions
+    st.write("### Modelo 1")
+    st.dataframe(filtered_gpt_labels)
 
-    st.write("### Etiquetas propuestas por RTM")
-    edited_rtm_labels = {}
-    for idx, label in enumerate(rtm_labels.index):
-        edited_rtm_labels[label] = st.text_input(f"RTM - {label}", rtm_labels[label])
+    # Display Model 2 (RTM) predictions
+    st.write("### Modelo 2")
+    st.dataframe(filtered_rtm_labels)
 
     # Allow the user to select which model they prefer
     st.write("### ¿Cuál modelo consideras mejor para esta votación?")
-    model_choice = st.radio("Elige el modelo:", ["GPT-3.5", "RTM"])
+    model_choice = st.radio("Elige el modelo:", ["Modelo 1", "Modelo 2"], key="model_choice")
 
     # Provide a text area for comments
     user_comment = st.text_area("Escribe un comentario sobre tu elección:")
@@ -58,23 +68,34 @@ def show_UserModelRanking(data: pd.DataFrame):
     with st.form(key='ranking_form'):
         submitted = st.form_submit_button("Enviar")
 
-    # After submission
     if submitted:
-        # Structure the data for submission (to be handled later)
-        data_to_send = {
-            'vote_name': vote_name,
-            'gpt_labels': edited_gpt_labels,
-            'rtm_labels': edited_rtm_labels,
-            'chosen_model': model_choice,
-            'user_comment': user_comment
-        }
+        # Only proceed if a model has been selected
+        if not model_choice:
+            st.warning("Por favor, selecciona un modelo.")
+        else:
+            # Map the selected model to 0 or 1
+            model_mapping = 0 if model_choice == "Modelo 1" else 1
 
-        save_UserModelRanking_To_Postgres(data_to_send)
+            # Structure the data for submission
+            data_to_send = {
+                'vote_index': vote_index,  # Add the vote index to be stored
+                'vote_name': vote_name,
+                'chosen_model': model_mapping,  # Store 0 for Model 1 (GPT) and 1 for Model 2 (RTM)
+                'user_comment': user_comment
+            }
 
-        st.success("¡Gracias por tu colaboración!")
+            save_UserModelRanking_To_Postgres(data_to_send)
 
-        # Randomly select a new vote for the next round
-        st.session_state.selected_vote_index = get_Random_Vote(data)
+            st.success("¡Gracias por tu colaboración!")
 
-        # Optional: re-render the page
-        st.experimental_rerun()
+            # Reset the selected model and form
+            st.session_state.selected_model = None
+
+            # Reset the model choice key to reset the radio button state
+            st.session_state.pop("model_choice", None)
+
+            # Randomly select a new vote for the next round
+            st.session_state.selected_vote_index = get_Random_Vote(data)
+
+            # Optional: re-render the page
+            st.experimental_rerun()
