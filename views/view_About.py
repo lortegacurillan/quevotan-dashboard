@@ -145,3 +145,45 @@ def show_About():
             [intro_text, project_text, methodology_text, team_text, impact_text, contact_text]
         ):
             container.markdown(text, unsafe_allow_html=True)
+
+def label_selection_form(labels, vote, form_key, form_submit_label="Enviar"):
+    """
+    Function to handle the label selection form in a reusable way using a multiselect input.
+
+    Parameters:
+        labels (list): List of label options for the form.
+        vote (dict): The current vote data, including 'votaciones_Nombre' and '_id'.
+        form_key (str): A unique key for the form.
+        form_submit_label (str): The label for the submit button. Default is "Enviar".
+
+    Returns:
+        dict or None: Returns a dictionary of selected labels mapped to 1/0, or None if not submitted.
+    """
+    with st.form(key=form_key):
+        st.write("Selecciona las etiquetas que correspondan:")
+        selected_labels = st.multiselect(
+            "Selecciona las etiquetas:",
+            options=labels,
+            default=[],  # No preselected labels
+            key=f"{form_key}_multiselect"
+        )
+
+        submitted = st.form_submit_button(form_submit_label)
+
+        if submitted:
+            if selected_labels:
+                # Convert multiselect result to a dictionary format with 1/0
+                selected_dict = {label: int(label in selected_labels) for label in labels}
+                
+                # Prepare the final data to send based on the selected labels
+                data_to_send = {
+                    'vote_index': vote['_id'],
+                    'votaciones_Nombre': vote['votaciones_Nombre'],
+                    **selected_dict
+                }
+                return data_to_send
+            else:
+                st.warning("Por favor, selecciona al menos una etiqueta.")
+                return None
+
+    return None
