@@ -37,31 +37,34 @@ def show_UserLabeling(data: pd.DataFrame):
     st.markdown(f"## {vote['votaciones_Nombre']}")
     st.markdown(f"##### {vote['_id']}")
 
-    # Create a form for label selection
-    selected_Labels = {}
+    # Create a form for label selection using multiselect
     with st.form(key='labeling_form'):
         st.write("Selecciona las etiquetas que correspondan:")
-        for label in labels:
-            selected_Labels[label] = st.checkbox(label, key=label)  # Ensure each checkbox has a unique key
+        selected_labels = st.multiselect(
+            "Selecciona las etiquetas:",
+            options=labels,
+            default=[],  # No preselected labels
+            key="multiselect_labels"
+        )
         submitted = st.form_submit_button("Enviar")
 
     # After form submission
     if submitted:
-        if any(selected_Labels.values()):
-            # Prepare data for submission
+        if selected_labels:
+            # Prepare data for submission, setting the labels to 1 if selected, otherwise 0
             data_to_send = {
                 'vote_index': vote['_id'],
                 'votaciones_Nombre': vote['votaciones_Nombre'],
-                'Seguridad y Defensa': int(selected_Labels["Seguridad y Defensa"]),
-                'Relaciones Internacionales': int(selected_Labels["Relaciones Internacionales"]),
-                'Energía y Medioambiente': int(selected_Labels["Energía y Medioambiente"]),
-                'Justicia y Derechos Humanos': int(selected_Labels["Justicia y Derechos Humanos"]),
-                'Educación': int(selected_Labels["Educación"]),
-                'Políticas Sociales': int(selected_Labels["Políticas Sociales"]),
-                'Deporte, Cultura y Salud': int(selected_Labels["Deporte, Cultura y Salud"]),
-                'Política Económica': int(selected_Labels["Política Económica"]),
-                'Política Interna': int(selected_Labels["Política Interna"]),
-                'Participación Ciudadana': int(selected_Labels["Participación Ciudadana"]),
+                'Seguridad y Defensa': int("Seguridad y Defensa" in selected_labels),
+                'Relaciones Internacionales': int("Relaciones Internacionales" in selected_labels),
+                'Energía y Medioambiente': int("Energía y Medioambiente" in selected_labels),
+                'Justicia y Derechos Humanos': int("Justicia y Derechos Humanos" in selected_labels),
+                'Educación': int("Educación" in selected_labels),
+                'Políticas Sociales': int("Políticas Sociales" in selected_labels),
+                'Deporte, Cultura y Salud': int("Deporte, Cultura y Salud" in selected_labels),
+                'Política Económica': int("Política Económica" in selected_labels),
+                'Política Interna': int("Política Interna" in selected_labels),
+                'Participación Ciudadana': int("Participación Ciudadana" in selected_labels),
             }
 
             # Save data to PostgreSQL
@@ -73,10 +76,8 @@ def show_UserLabeling(data: pd.DataFrame):
             # Mark that a new vote is required for the next cycle
             st.session_state.new_vote_required = True
 
-            # Clear the form by resetting the session state for checkboxes **AFTER** submission
-            for label in labels:
-                if label in st.session_state:
-                    del st.session_state[label]  # Reset checkbox state
+            # Reset the multiselect state
+            st.session_state.pop("multiselect_labels", None)
 
             # Refresh the page to display the new vote
             st.experimental_rerun()  # Safe method to refresh the page without experimental functions
