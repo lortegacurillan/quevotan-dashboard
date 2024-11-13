@@ -3,43 +3,77 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime
 from back.get_DB_Connection import DATABASE_URI
 
-# Conexión a la base de datos
+# Database connection setup
 engine = create_engine(DATABASE_URI)
 Base = declarative_base()
 
-# Definir el modelo de la tabla user_model_ranking
+# Define the models for both tables
 class UserModelRanking(Base):
     __tablename__ = 'user_model_ranking'
     
     submission_id = Column(Integer, primary_key=True, autoincrement=True)
-    vote_index = Column(Integer, nullable=False)  # New column for vote index
+    vote_index = Column(Integer, nullable=False)
     vote_name = Column(String, nullable=False)
-    chosen_model = Column(Integer, nullable=False)  # Now stores 0 (GPT) or 1 (RTM)
+    chosen_model = Column(Integer, nullable=False)  # 0 for GPT, 1 for RTM
     user_comment = Column(Text)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
-# Crear las tablas si no existen
+class VoteFrequencySoftmax(Base):
+    __tablename__= 'vote_ranking_softmax'
+    vote_index = Column(Integer, primary_key=True, nullable=False)  # Matches index in main corpus table
+    vote_Name = Column(String, nullable=False)
+    appearance_count = Column(Integer, nullable=False)  # Tracks appearances
+
+# Create tables if they don't already exist
 Base.metadata.create_all(engine)
 
-# Crear una sesión
+# Create a database session
 Session = sessionmaker(bind=engine)
 
 def save_UserModelRanking_To_Postgres(data_To_Send: dict):
-    """Función para guardar los datos del UserModelRanking usando ORM"""
+    """
+    Function to save UserModelRanking data and update appearance count in VoteFrequencySoftmax.
+    """
     session = Session()
     try:
-        # Creating a new entry
+        # Ensure all integers are cast to native Python int
+        data_To_Send['vote_index'] = int(data_To_Send['vote_index'])
+        data_To_Send['chosen_model'] = int(data_To_Send['chosen_model'])
+
+        # Insert new entry in the UserModelRanking table
         new_entry = UserModelRanking(
-            vote_index=data_To_Send['vote_index'],  # Include vote index
+            vote_index=data_To_Send['vote_index'],
             vote_name=data_To_Send['vote_name'],
-            chosen_model=data_To_Send['chosen_model'],  # Store 0 for Model 1 (GPT) and 1 for Model 2 (RTM)
+            chosen_model=data_To_Send['chosen_model'],
             user_comment=data_To_Send['user_comment'],
             timestamp=datetime.now()
         )
         session.add(new_entry)
+        session.commit()  # Commit to generate a submission_id for the new entry
+
+        # Check for existing entry in VoteFrequencySoftmax
+        existing_softmax_entry = session.query(VoteFrequencySoftmax).filter_by(vote_index=data_To_Send['vote_index']).first()
+
+        if existing_softmax_entry:
+            # Increment appearance_count if entry exists
+            existing_softmax_entry.appearance_count += 1
+        else:
+            # Create a new entry if it doesn't exist
+            new_softmax_entry = VoteFrequencySoftmax(
+                vote_index=data_To_Send['vote_index'],
+                vote_Name=data_To_Send['vote_name'],
+                appearance_count=1
+            )
+            session.add(new_softmax_entry)
+
+        # Commit changes to VoteFrequencySoftmax
         session.commit()
+
     except Exception as e:
-        session.rollback()  # Reset session on failure
+        # Rollback session in case of error
+        session.rollback()
         raise e
     finally:
+        # Close the session
         session.close()
+

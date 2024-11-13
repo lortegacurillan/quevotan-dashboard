@@ -44,6 +44,7 @@ st.markdown("""
 data = get_Data('corpus_etiquetado_sampled')
 data_Mismatches = get_Data('expanded_mismatches')
 data_TotalPredictions = get_Data('gpt_rtm_comparison')
+data_Softmax = get_Data('vote_ranking_softmax')
 
 # Definir el menú vertical
 st.sidebar.image("src/quevotan.jpg", use_column_width=True)
@@ -64,6 +65,6 @@ elif opcion == "Comparativa":
 elif opcion == "Formulario":
     show_UserLabeling(data)
 elif opcion == "Ranking":
-    show_UserModelRanking(data_TotalPredictions)
+    show_UserModelRanking(data_Mismatches, data_Softmax)
 
 
