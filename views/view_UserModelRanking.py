@@ -108,8 +108,7 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
                 'user_comment': user_comment
             }
 
-            save_UserModelRanking_To_Postgres(data_to_send)
-
+            save_UserModelRanking_To_Postgres(data_to_send) 
             st.success("¡Gracias por tu colaboración!")
 
             # Reset the selected model and form
