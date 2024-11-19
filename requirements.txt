@@ -9,3 +9,5 @@ plotly==5.23.0
 #flask==3.0.0
 psycopg2-binary==2.9.9
 SQLAlchemy==2.0.35
+protobuf == 4.21.12
+grpcio-status == 1.48.0
