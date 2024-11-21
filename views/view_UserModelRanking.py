@@ -31,8 +31,21 @@ def can_submit() -> bool:
     return datetime.now() - st.session_state.last_submission >= timedelta(seconds=5)
 
 def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
-    st.title("Comparación de Etiquetas: Modelos")
-
+    st.markdown("""
+    <style>
+        @keyframes highlight {
+            0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); }
+            50% { box-shadow: 0 0 20px 0 rgba(255,255,255,0.2); }
+            100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); }
+        }
+        .vote-container {
+            animation: highlight 2s ease-in-out;
+            animation-delay: 0.1s;
+            animation-fill-mode: both;
+            content-visibility: auto;
+        }
+    </style>
+    """, unsafe_allow_html=True)
     # Define labels
     labels = [
         "Seguridad y Defensa", "Relaciones Internacionales", "Energía y Medioambiente",
@@ -49,28 +62,59 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
     vote_index = st.session_state.selected_vote_index
     vote_row = data.iloc[vote_index]
 
-    # Extract vote information
+    # Extract vote information with matching box style
     vote_name = vote_row['vote_Name']
-    gpt_labels = vote_row[[f"GPT_{label}" for label in labels]]
-    rtm_labels = vote_row[[f"RTM_{label}" for label in labels]]
+    st.markdown(f"""
+    <style>
+        @keyframes fadeHighlight {{
+            0% {{ background-color: #ffffff; }}
+            100% {{ background-color: #1e1e1e; }}
+        }}
+    </style>
+    <div style='padding: 1rem; 
+                animation: fadeHighlight 2s ease-out; 
+                background-color: #1e1e1e; 
+                border-radius: 0.5rem; 
+                margin: 1rem 0; 
+                border-left: 5px solid #4a4a4a;'>
+        <h4 style='margin: 0 0 0.5rem 0; color: #666666;'>Voto:</h4>
+        <h2 style='font-size: 1.8rem; margin: 0; color: #ffffff;'>
+            {vote_name}
+        </h2>
+    </div>
+
+    <div style='padding: 1rem; 
+                background-color: #1e1e1e; 
+                border-radius: 0.5rem; 
+                margin: 1rem 0; 
+                border-left: 5px solid #4a4a4a;'>
+        <h4 style='margin: 0 0 0.5rem 0; color: #666666;'>Instrucciones:</h4>
+        <p style='font-size: 1.3rem; margin: 0; color: #ffffff; font-weight: 500;'>
+            1. Compare las predicciones de ambos modelos<br>
+            2. Vote por el modelo que considere más preciso<br>
+            3. Explique su elección en el cuadro de comentarios
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Filter and prepare predictions
+    gpt_labels = vote_row[[f"GPT_{label}" for label in labels]]
+    rtm_labels = vote_row[[f"RTM_{label}" for label in labels]]
     filtered_gpt_labels = filter_predictions(pd.DataFrame(gpt_labels).T, labels, model_type="GPT")
     filtered_rtm_labels = filter_predictions(pd.DataFrame(rtm_labels).T, labels, model_type="RTM")
 
-    # Display vote information
-    st.markdown(f"### {vote_name}")
-    st.write("Por favor, compare las predicciones de ambos modelos y vote por el que considere más preciso. "
-             "Explique su elección en el cuadro de comentarios proporcionado.")
+    # Display model predictions in columns
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("<h3 style='color: #FFFFFF;'>Modelo 1</h3>", unsafe_allow_html=True)
+        st.write(filtered_gpt_labels)
+    
+    with col2:
+        st.markdown("<h3 style='color: #FFFFFF;'>Modelo 2</h3>", unsafe_allow_html=True)
+        st.write(filtered_rtm_labels)
 
-    # Display model predictions
-    st.write("### Modelo 1")
-    st.write(filtered_gpt_labels)
-
-    st.write("### Modelo 2")
-    st.write(filtered_rtm_labels)
-
-    # Combined form submission
+    # Rest of your existing form code...
     with st.form(key='ranking_form', clear_on_submit=True):
         model_choice = st.radio(
             "### ¿Cuál modelo consideras que tuvo la mejor prediccion para esta votación?",
