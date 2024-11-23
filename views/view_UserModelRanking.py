@@ -5,6 +5,7 @@ import random
 import time
 from datetime import datetime, timedelta
 from back.post_RankingData import save_UserModelRanking_To_Postgres
+import os
 
 def get_Random_Vote(data: pd.DataFrame) -> int:
     random_index = random.randint(0, len(data) - 1)
@@ -21,9 +22,12 @@ def filter_predictions(predictions, labels, model_type="GPT"):
     columns_with_ones = predictions.columns[(predictions == 1).any(axis=0)]
     filtered_predictions = predictions[columns_with_ones]
     label_mapping = {f"{model_type}_{label}": label for label in labels}
-    renamed_columns = [label_mapping.get(col, col) for col in filtered_predictions.columns]
-    filtered_predictions.columns = renamed_columns
-    return filtered_predictions
+    
+    # Get selected and unselected labels
+    selected_labels = [label_mapping[col] for col in filtered_predictions.columns]
+    unselected_labels = [label for label in labels if label not in selected_labels]
+    
+    return selected_labels, unselected_labels
 
 def can_submit() -> bool:
     if "last_submission" not in st.session_state:
@@ -31,20 +35,120 @@ def can_submit() -> bool:
     return datetime.now() - st.session_state.last_submission >= timedelta(seconds=5)
 
 def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
+    # Initialize session state variables
+    if 'consent_given' not in st.session_state:
+        st.session_state['consent_given'] = False
+    if 'expertise_rated' not in st.session_state:
+        st.session_state['expertise_rated'] = False
+    if 'expertise_level' not in st.session_state:
+        st.session_state['expertise_level'] = None
+
+    # Add styles including vertical button stacking
     st.markdown("""
-    <style>
-        @keyframes highlight {
-            0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); }
-            50% { box-shadow: 0 0 20px 0 rgba(255,255,255,0.2); }
-            100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); }
-        }
-        .vote-container {
-            animation: highlight 2s ease-in-out;
-            animation-delay: 0.1s;
-            animation-fill-mode: both;
-            content-visibility: auto;
-        }
-    </style>
+        <style>
+            .blur-overlay {
+                filter: blur(5px);
+                pointer-events: none;
+            }
+            .consent-dialog {
+                background-color: #1e1e1e;
+                padding: 2rem;
+                border-radius: 0.5rem;
+                border-left: 5px solid #4a4a4a;
+                margin: 2rem auto;
+                max-width: 600px;
+            }
+            .button-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+                margin-top: 1rem;
+                width: 100%;
+            }
+            .button-container > div {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+    if not st.session_state.consent_given:
+        with st.container():
+            st.markdown("""
+                <div class='consent-dialog'>
+                    <h2 style='color: #ffffff;'>Consentimiento Informado</h2>
+                    <p style='color: #ffffff;'>
+                        Al participar en esta evaluación, usted acepta que:
+                        <br>• Sus respuestas serán utilizadas con fines de investigación
+                        <br>• Los datos serán tratados de forma anónima
+                        <br>• Puede detener su participación en cualquier momento
+                    </p>
+                    <div class='button-container'>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Acepto participar en la evaluación"):
+                st.session_state.consent_given = True
+                st.experimental_rerun()
+            
+            with open("src/CI cuestionario.pdf", "rb") as pdf_file:
+                st.download_button(
+                    label="Descargar comprobante de consentimiento",
+                    data=pdf_file,
+                    file_name="Consentimiento Informado.pdf",
+                    mime="application/pdf"
+                )
+            
+            st.markdown("""
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            st.markdown("<div class='blur-overlay'>", unsafe_allow_html=True)
+            return
+
+    # Show expertise rating if not rated
+    elif not st.session_state.expertise_rated:
+        with st.container():
+            st.markdown("""
+                <div class='consent-dialog'>
+                    <h2 style='color: #ffffff;'>Nivel de Experiencia</h2>
+                    <p style='color: #ffffff;'>
+                        Por favor, indique una autopercepcion de su nivel de conocimiento sobre política y legislación chilena:
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            expertise = st.slider("Nivel de experiencia (1-10):", 1, 10, 5)
+            if st.button("Confirmar"):
+                st.session_state.expertise_level = expertise
+                st.session_state.expertise_rated = True
+                st.experimental_rerun()
+            
+            # Blur rest of content
+            st.markdown("<div class='blur-overlay'>", unsafe_allow_html=True)
+            return
+
+    # Show main content if all requirements met
+    st.markdown("""
+        <style>
+            /* Increase width of multiselect dropdowns */
+            .stMultiSelect {
+                min-width: 300px !important;
+            }
+            
+            /* Ensure menu items don't get truncated */
+            .stMultiSelect > div > div {
+                white-space: normal !important;
+                height: auto !important;
+            }
+            
+            /* Style for dropdown options */
+            .stMultiSelect [data-baseweb="select"] {
+                white-space: normal;
+                word-wrap: break-word;
+            }
+        </style>
     """, unsafe_allow_html=True)
     # Define labels
     labels = [
@@ -90,9 +194,10 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
                 border-left: 5px solid #4a4a4a;'>
         <h4 style='margin: 0 0 0.5rem 0; color: #666666;'>Instrucciones:</h4>
         <p style='font-size: 1.3rem; margin: 0; color: #ffffff; font-weight: 500;'>
-            1. Compare las predicciones de ambos modelos<br>
-            2. Vote por el modelo que considere más preciso<br>
-            3. Explique su elección en el cuadro de comentarios
+            1. Lea el Voto y compare ambas opciones<br>
+            2. Escoge la opcion que consideres mas aplicable al Voto<br>
+            3. Agrega categorias adicionales si consideras aplicable<br>
+            4. Escribe un comentario sobre tu elección
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -100,25 +205,52 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
     # Filter and prepare predictions
     gpt_labels = vote_row[[f"GPT_{label}" for label in labels]]
     rtm_labels = vote_row[[f"RTM_{label}" for label in labels]]
-    filtered_gpt_labels = filter_predictions(pd.DataFrame(gpt_labels).T, labels, model_type="GPT")
-    filtered_rtm_labels = filter_predictions(pd.DataFrame(rtm_labels).T, labels, model_type="RTM")
+    gpt_selected, gpt_unselected = filter_predictions(pd.DataFrame(gpt_labels).T, labels, model_type="GPT")
+    rtm_selected, rtm_unselected = filter_predictions(pd.DataFrame(rtm_labels).T, labels, model_type="RTM")
 
     # Display model predictions in columns
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("<h3 style='color: #FFFFFF;'>Modelo 1</h3>", unsafe_allow_html=True)
-        st.write(filtered_gpt_labels)
+        st.markdown("<h3 style='color: #FFFFFF;'>Opción 1</h3>", unsafe_allow_html=True)
+        st.multiselect(
+            "",
+            options=gpt_selected,
+            default=gpt_selected,
+            disabled=True,
+            key="gpt_selected"
+        )
+        
+        st.markdown("<p style='color: #666666; margin-top: 1rem;'>Categorías adicionales que consideras aplicables:</p>", unsafe_allow_html=True)
+        additional_gpt = st.multiselect(
+            "",
+            options=gpt_unselected,
+            default=[],
+            key="gpt_additional"
+        )
     
     with col2:
-        st.markdown("<h3 style='color: #FFFFFF;'>Modelo 2</h3>", unsafe_allow_html=True)
-        st.write(filtered_rtm_labels)
-
-    # Rest of your existing form code...
+        st.markdown("<h3 style='color: #FFFFFF;'>Opción 2</h3>", unsafe_allow_html=True)
+        st.multiselect(
+            "",
+            options=rtm_selected,
+            default=rtm_selected,
+            disabled=True,
+            key="rtm_selected"
+        )
+        
+        st.markdown("<p style='color: #666666; margin-top: 1rem;'>Categorías adicionales que consideras aplicables:</p>", unsafe_allow_html=True)
+        additional_rtm = st.multiselect(
+            "",
+            options=rtm_unselected,
+            default=[],
+            key="rtm_additional"
+        )
+            
     with st.form(key='ranking_form', clear_on_submit=True):
         model_choice = st.radio(
-            "### ¿Cuál modelo consideras que tuvo la mejor prediccion para esta votación?",
-            ["Modelo 1", "Modelo 2"]
+            "### ¿Cuál opción consideras que tuvo la mejor prediccion para esta votación?",
+            ["Opción 1", "Opción 2"]
         )
         
         user_comment = st.text_area(
@@ -136,12 +268,17 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
                 with st.spinner('Procesando tu voto...'):
                     try:
                         # Map the selected model and prepare data
-                        model_mapping = 0 if model_choice == "Modelo 1" else 1
+                        additional_labels = additional_gpt if model_choice == "Opción 1" else additional_rtm
+
+                        model_mapping = 0 if model_choice == "Opción 1" else 1
                         data_to_send = {
                             'vote_index': vote_index,
                             'vote_name': vote_name,
                             'chosen_model': model_mapping,
-                            'user_comment': user_comment
+                            'user_comment': user_comment,
+                            'consent_given': st.session_state.consent_given,
+                            'expertise_level': st.session_state.expertise_level,
+                            'additional_labels': additional_labels if additional_labels else []
                         }
                         
                         # Save to database
@@ -163,3 +300,4 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
                         
                     except Exception as e:
                         st.error(f"Error al procesar el voto: {str(e)}")
+
