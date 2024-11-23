@@ -36,8 +36,8 @@ def can_submit() -> bool:
 
 def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
     # Initialize session state variables
-    if 'consent_given' not in st.session_state:
-        st.session_state['consent_given'] = False
+    if 'user_agreement_given' not in st.session_state:
+        st.session_state['user_agreement_given'] = False
     if 'expertise_rated' not in st.session_state:
         st.session_state['expertise_rated'] = False
     if 'expertise_level' not in st.session_state:
@@ -50,7 +50,7 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
                 filter: blur(5px);
                 pointer-events: none;
             }
-            .consent-dialog {
+            .user-dialog {
                 background-color: #1e1e1e;
                 padding: 2rem;
                 border-radius: 0.5rem;
@@ -74,11 +74,11 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
         </style>
     """, unsafe_allow_html=True)
 
-    if not st.session_state.consent_given:
+    if not st.session_state.user_agreement_given:
         with st.container():
             st.markdown(r"""
-                <div class='consent-dialog'>
-                    <h2 style='color: #ffffff;'>Consentimiento Informado</h2>
+                <div class='user-dialog'>
+                    <h2 style='color: #ffffff;'>Acuerdo de Usuario</h2>
                     <p style='color: #ffffff;'>
                         Al participar en esta evaluación, usted acepta que:
                         <br>• Sus respuestas serán utilizadas con fines de investigación
@@ -89,14 +89,14 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
             """, unsafe_allow_html=True)
             
             if st.button("Acepto participar en la evaluación"):
-                st.session_state.consent_given = True
+                st.session_state.user_agreement_given = True
                 st.experimental_rerun()
             
             with open("src/CI cuestionario.pdf", "rb") as pdf_file:
                 st.download_button(
-                    label="Descargar comprobante de consentimiento",
+                    label="Descargar comprobante de acuerdo",
                     data=pdf_file,
-                    file_name="Consentimiento Informado.pdf",
+                    file_name="Acuerdo_Usuario.pdf",
                     mime="application/pdf"
                 )
             
@@ -111,7 +111,7 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
     elif not st.session_state.expertise_rated:
         with st.container():
             st.markdown(r"""
-                <div class='consent-dialog'>
+                <div class='user-dialog'>
                     <h2 style='color: #ffffff;'>Nivel de Experiencia</h2>
                     <p style='color: #ffffff;'>
                         Por favor, indique una autopercepcion de su nivel de conocimiento sobre política y legislación chilena:
