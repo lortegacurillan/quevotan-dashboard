@@ -44,7 +44,7 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
         st.session_state['expertise_level'] = None
 
     # Add styles including vertical button stacking
-    st.markdown("""
+    st.markdown(r"""
         <style>
             .blur-overlay {
                 filter: blur(5px);
@@ -76,7 +76,7 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
 
     if not st.session_state.consent_given:
         with st.container():
-            st.markdown("""
+            st.markdown(r"""
                 <div class='consent-dialog'>
                     <h2 style='color: #ffffff;'>Consentimiento Informado</h2>
                     <p style='color: #ffffff;'>
@@ -100,7 +100,7 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
                     mime="application/pdf"
                 )
             
-            st.markdown("""
+            st.markdown(r"""
                     </div>
                 </div>
             """, unsafe_allow_html=True)
@@ -110,7 +110,7 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
     # Show expertise rating if not rated
     elif not st.session_state.expertise_rated:
         with st.container():
-            st.markdown("""
+            st.markdown(r"""
                 <div class='consent-dialog'>
                     <h2 style='color: #ffffff;'>Nivel de Experiencia</h2>
                     <p style='color: #ffffff;'>
@@ -125,7 +125,6 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
                 st.session_state.expertise_rated = True
                 st.experimental_rerun()
             
-            # Blur rest of content
             st.markdown("<div class='blur-overlay'>", unsafe_allow_html=True)
             return
 
@@ -300,4 +299,3 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
                         
                     except Exception as e:
                         st.error(f"Error al procesar el voto: {str(e)}")
-
