@@ -12,10 +12,9 @@ class UserModelRanking(Base):
     __tablename__ = 'user_model_ranking'
     
     submission_id = Column(Integer, primary_key=True, autoincrement=True)
-    vote_index = Column(Integer, nullable=False)
+    em_index = Column(Integer, nullable=False)
     vote_name = Column(String, nullable=False)
     chosen_model = Column(Integer, nullable=False)  # 0 for GPT, 1 for RTM
-    user_comment = Column(Text)
     consent_given = Column(Boolean, nullable=False)
     expertise_level = Column(Integer, nullable=False)
     additional_labels = Column(ARRAY(String))
@@ -47,10 +46,9 @@ def save_UserModelRanking_To_Postgres(data_To_Send: dict):
 
         # Insert new entry in the UserModelRanking table
         new_entry = UserModelRanking(
-            vote_index=data_To_Send['vote_index'],
+            em_index=data_To_Send['vote_index'],
             vote_name=data_To_Send['vote_name'],
             chosen_model=data_To_Send['chosen_model'],
-            user_comment=data_To_Send['user_comment'],
             consent_given=bool(data_To_Send['consent_given']),
             expertise_level=data_To_Send['expertise_level'],
             additional_labels=data_To_Send.get('additional_labels', []),

@@ -5,11 +5,8 @@ import random
 import time
 from datetime import datetime, timedelta
 from back.post_RankingData import save_UserModelRanking_To_Postgres
+import base64
 import os
-
-def get_Random_Vote(data: pd.DataFrame) -> int:
-    random_index = random.randint(0, len(data) - 1)
-    return random_index
 
 def get_Softmax_Vote(data: pd.DataFrame) -> int:
     inverted_occurrences = data['appearance_count'].max() - data['appearance_count']
@@ -43,83 +40,160 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
     if 'expertise_level' not in st.session_state:
         st.session_state['expertise_level'] = None
 
-    # Add styles including vertical button stacking
-    st.markdown(r"""
+    #gracias felipe thx: dynamic state detection thingy
+    theme_mode = st.session_state.get("theme_mode", "light") 
+    text_color = "#000000" if theme_mode == "light" else "#ffffff"
+    bg_color = "#ffffff" if theme_mode == "light" else "#1e1e1e"
+    border_color = "#dddddd" if theme_mode == "light" else "#4a4a4a"
+
+    # Add styles including modern visual appearance for PDF viewer and buttons
+    st.markdown(f"""
         <style>
-            .blur-overlay {
-                filter: blur(5px);
-                pointer-events: none;
-            }
-            .user-dialog {
-                background-color: #1e1e1e;
-                padding: 2rem;
-                border-radius: 0.5rem;
-                border-left: 5px solid #4a4a4a;
-                margin: 2rem auto;
-                max-width: 600px;
-            }
-            .button-container {
+            body {{
+                background-color: {bg_color};
+                color: {text_color};
+            }}
+            .pdf-container {{
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }}
+            .pdf-viewer {{
+                display: block;
+                margin: 0 auto;
+                max-width: 900px;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
+            }}
+            .button-container {{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }}
+            iframe {{
+                width: 80%;
+                height: 670px;
+                border: none;
+                border-radius: 10px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            }}
+            .stMultiSelect {{
+                min-width: 300px !important;
+            }}
+            .stMultiSelect > div > div {{
+                white-space: normal !important;
+                height: auto !important;
+            }}
+        </style>
+        """, unsafe_allow_html=True)
+
+    if not st.session_state.user_agreement_given:
+        st.markdown("""
+        <style>
+            .pdf-container {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                gap: 1rem;
-                margin-top: 1rem;
-                width: 100%;
-            }
-            .button-container > div {
-                width: 100%;
-                display: flex;
                 justify-content: center;
+
+            }
+            .button-container {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+
+
+            }
+            iframe {
+                width: 80%;
+                height: 670px;
+                border: none;
+                border-radius: 10px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             }
         </style>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-    if not st.session_state.user_agreement_given:
-        with st.container():
-            st.markdown(r"""
-                <div class='user-dialog'>
-                    <h2 style='color: #ffffff;'>Acuerdo de Usuario</h2>
-                    <p style='color: #ffffff;'>
-                        Al participar en esta evaluación, usted acepta que:
-                        <br>• Sus respuestas serán utilizadas con fines de investigación
-                        <br>• Los datos serán tratados de forma anónima
-                        <br>• Puede detener su participación en cualquier momento
-                    </p>
-                    <div class='button-container'>
-            """, unsafe_allow_html=True)
-            
-            if st.button("Acepto participar en la evaluación"):
-                st.session_state.user_agreement_given = True
-                st.experimental_rerun()
-            
-            with open("src/CI cuestionario.pdf", "rb") as pdf_file:
-                st.download_button(
-                    label="Descargar comprobante de acuerdo",
-                    data=pdf_file,
-                    file_name="Acuerdo_Usuario.pdf",
-                    mime="application/pdf"
-                )
-            
-            st.markdown(r"""
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-            st.markdown("<div class='blur-overlay'>", unsafe_allow_html=True)
-            return
+        # Contenedor principal para el PDF y los botones
+        st.markdown("<div class='pdf-container'>", unsafe_allow_html=True)
+
+        # Mostrar el visor PDF embebido
+        pdf_path = 'src/CI cuestionario.pdf'
+        # Título del documento
+        st.title("Consentimiento Informado Cuestionario")
+
+        # Contenido del documento
+        st.markdown("""
+        ### Universidad Católica de Temuco, Comité de Ética de la Investigación  
+        **Dirección:** Manuel Montt 56, Fono: 452205489, Temuco, Chile.
+
+        Estimado Usuario:
+
+        Usted ha sido invitado a participar en el estudio titulado **“Modelos clasificadores en el lenguaje natural para el análisis de corpus de la honorable cámara de diputadas y diputados de Chile”**, dirigido por el académico **Dr. Julio César Rojas Mora** de la Facultad de Ingeniería de la Universidad Católica de Temuco.
+
+        El objetivo de este estudio es comparar los resultados de etiquetación automática de contenido legislativo respecto al título de cada votación.
+
+        Si usted acepta participar en este estudio, se le solicitará que responda un cuestionario, que contiene preguntas sobre su percepción de las diferentes etiquetas asignadas a cada votación. El cuestionario en sí le tomará aproximadamente **10 minutos**.
+
+        La **participación en esta actividad es voluntaria** y no involucra ningún daño o peligro para su salud física o mental. Usted puede negarse a participar en cualquier momento del estudio sin que deba dar razones para ello, ni recibir ningún tipo de sanción.
+
+        Los **datos obtenidos serán de carácter confidencial** y se guardará el anonimato. Estos datos serán organizados con un número asignado a cada participante. Su identidad estará disponible solo para el personal del proyecto y se mantendrá completamente confidencial. Los datos estarán a cargo del equipo de investigación de este estudio para el posterior desarrollo de informes y publicaciones dentro de revistas científicas. Todos los nuevos hallazgos significativos desarrollados durante el curso de la investigación le serán entregados a usted. Además, se entregará al establecimiento educacional un informe con los resultados globales sin identificar el nombre de los participantes.
+
+        Las informaciones recolectadas no serán usadas para ningún otro propósito, además de los señalados anteriormente, sin su autorización previa y por escrito.
+
+        Cualquier pregunta que desee hacer durante el proceso de investigación podrá contactar al académico **Dr. Julio César Rojas Mora** de la Facultad de Ingeniería de la Universidad Católica de Temuco.  
+        - **Teléfono**: +56-45-2205229  
+        - **Correo electrónico**: [jrojas@inf.uct.cl](mailto:jrojas@inf.uct.cl)  
+        """)
+
+        # Botón para visualizar el PDF
+        pdf_path = 'src/CI cuestionario.pdf'  # Asegúrate de que este archivo exista en tu directorio
+        with open(pdf_path, "rb") as pdf_file:
+            pdf_bytes = pdf_file.read()
+            base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
+
+
+        # Contenedor para los botones
+        st.markdown("<div class='button-container'>", unsafe_allow_html=True)
+        # Botón para descargar el PDF
+        # Botón para aceptar
+        if st.button("Acepto participar en la evaluación", key="accept_button"):
+            st.session_state.user_agreement_given = True
+            st.experimental_rerun()
+        with open("src/CI cuestionario.pdf", "rb") as pdf_file:
+            st.download_button(
+                label="Descargar comprobante de acuerdo",
+                data=pdf_file,
+                file_name="Acuerdo_Usuario.pdf",
+                mime="application/pdf",
+                key="download_button"
+            )
+        
+        if st.button('Ver documento en formato pdf'):
+            st.markdown(pdf_display, unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        return
+
 
     # Show expertise rating if not rated
     elif not st.session_state.expertise_rated:
         with st.container():
             st.markdown(r"""
                 <div class='user-dialog'>
-                    <h2 style='color: #ffffff;'>Nivel de Experiencia</h2>
-                    <p style='color: #ffffff;'>
-                        Por favor, indique una autopercepcion de su nivel de conocimiento sobre política y legislación chilena:
+                    <h2 style='color: {text_color};'>Nivel de Experiencia</h2>
+                    <p style='color: {text_color};'>
+                        Por favor, indique una autopercepción de su nivel de conocimiento sobre política y legislación chilena:
                     </p>
                 </div>
             """, unsafe_allow_html=True)
             
-            expertise = st.slider("Nivel de experiencia (1-10):", 1, 10, 5)
+            expertise = st.slider("Nivel de Conocimiento (1-10):", 1, 10, 5)
             if st.button("Confirmar"):
                 st.session_state.expertise_level = expertise
                 st.session_state.expertise_rated = True
@@ -164,42 +238,42 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
     # Get current vote data
     vote_index = st.session_state.selected_vote_index
     vote_row = data.iloc[vote_index]
+    
+    # Modificar estilos en línea, asegurando consistencia
+    st.markdown(f"""
+        <div style="
+            padding: 1rem; 
+            background-color: {bg_color} !important; 
+            color: {text_color} !important; 
+            border-left: 5px solid {border_color}; 
+            border-radius: 0.5rem; 
+            margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: {text_color} !important;">Instrucciones:</h4>
+            <p style="font-size: 1.3rem; margin: 0; font-weight: 500; color: {text_color} !important;">
+                1. Lea el Voto y compare ambas opciones.<br>
+                2. Escoge la opción que consideres más aplicable al Voto.<br>
+                3. Selecciona las categorías que consideres correctas y aplicables<br>
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
 
-    # Extract vote information with matching box style
+    # Mostrar el texto del voto
     vote_name = vote_row['vote_Name']
     st.markdown(f"""
-    <style>
-        @keyframes fadeHighlight {{
-            0% {{ background-color: #ffffff; }}
-            100% {{ background-color: #1e1e1e; }}
-        }}
-    </style>
-    <div style='padding: 1rem; 
-                animation: fadeHighlight 2s ease-out; 
-                background-color: #1e1e1e; 
-                border-radius: 0.5rem; 
-                margin: 1rem 0; 
-                border-left: 5px solid #4a4a4a;'>
-        <h4 style='margin: 0 0 0.5rem 0; color: #666666;'>Voto:</h4>
-        <h2 style='font-size: 1.8rem; margin: 0; color: #ffffff;'>
-            {vote_name}
-        </h2>
-    </div>
-
-    <div style='padding: 1rem; 
-                background-color: #1e1e1e; 
-                border-radius: 0.5rem; 
-                margin: 1rem 0; 
-                border-left: 5px solid #4a4a4a;'>
-        <h4 style='margin: 0 0 0.5rem 0; color: #666666;'>Instrucciones:</h4>
-        <p style='font-size: 1.3rem; margin: 0; color: #ffffff; font-weight: 500;'>
-            1. Lea el Voto y compare ambas opciones<br>
-            2. Escoge la opcion que consideres mas aplicable al Voto<br>
-            3. Agrega categorias adicionales si consideras aplicable<br>
-            4. Escribe un comentario sobre tu elección
-        </p>
-    </div>
+        <div translate="no" style="
+            padding: 1rem; 
+            background-color: {bg_color} !important; 
+            color: {text_color} !important; 
+            border-left: 5px solid {border_color}; 
+            border-radius: 0.5rem; 
+            margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.5rem 0; color: {text_color} !important;">Voto:</h4>
+            <h2 style="font-size: 1.8rem; margin: 0; color: {text_color} !important;">
+                {vote_name}
+            </h2>
+        </div>
     """, unsafe_allow_html=True)
+
 
     # Filter and prepare predictions
     gpt_labels = vote_row[[f"GPT_{label}" for label in labels]]
@@ -209,52 +283,48 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
 
     # Display model predictions in columns
     col1, col2 = st.columns(2)
-    
+
     with col1:
-        st.markdown("<h3 style='color: #FFFFFF;'>Opción 1</h3>", unsafe_allow_html=True)
-        st.multiselect(
+        # Table for Opción 1 with a simple title row
+        gpt_table_html = f"""
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid white; text-align: center;">
+            <tr>
+                <th style="padding: 8px; border: 1px solid white;">Opción 1</th>
+            </tr>
+            {''.join(f'<tr><td style="padding: 8px; border: 1px solid white;">{label}</td></tr>' for label in gpt_selected)}
+        </table>
+        """
+        st.markdown(gpt_table_html, unsafe_allow_html=True)
+
+    with col2:
+        # Table for Opción 2 with a simple title row
+        rtm_table_html = f"""
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid white; text-align: center;">
+            <tr>
+                <th style="padding: 8px; border: 1px solid white;">Opción 2</th>
+            </tr>
+            {''.join(f'<tr><td style="padding: 8px; border: 1px solid white;">{label}</td></tr>' for label in rtm_selected)}
+        </table>
+        """
+        st.markdown(rtm_table_html, unsafe_allow_html=True)
+
+
+
+
+    st.divider()
+    with st.form(key='ranking_form', clear_on_submit=True):
+        st.markdown("<p style='color: {text_color}!important; margin-top: 1rem;'>Selecciona todas las categorías que consideres correctas respecto al voto mostrado:</p>", unsafe_allow_html=True)
+        additional_labels = st.multiselect(
             "",
-            options=gpt_selected,
-            default=gpt_selected,
-            disabled=True,
-            key="gpt_selected"
-        )
-        
-        st.markdown("<p style='color: #666666; margin-top: 1rem;'>Categorías adicionales que consideras aplicables:</p>", unsafe_allow_html=True)
-        additional_gpt = st.multiselect(
-            "",
-            options=gpt_unselected,
+            options=labels,
             default=[],
             key="gpt_additional"
         )
-    
-    with col2:
-        st.markdown("<h3 style='color: #FFFFFF;'>Opción 2</h3>", unsafe_allow_html=True)
-        st.multiselect(
-            "",
-            options=rtm_selected,
-            default=rtm_selected,
-            disabled=True,
-            key="rtm_selected"
-        )
-        
-        st.markdown("<p style='color: #666666; margin-top: 1rem;'>Categorías adicionales que consideras aplicables:</p>", unsafe_allow_html=True)
-        additional_rtm = st.multiselect(
-            "",
-            options=rtm_unselected,
-            default=[],
-            key="rtm_additional"
-        )
-            
-    with st.form(key='ranking_form', clear_on_submit=True):
         model_choice = st.radio(
             "### ¿Cuál opción consideras que tuvo la mejor prediccion para esta votación?",
             ["Opción 1", "Opción 2"]
         )
         
-        user_comment = st.text_area(
-            "Escribe un comentario sobre tu elección:"
-        )
         
         submitted = st.form_submit_button("Enviar")
         
@@ -267,15 +337,14 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
                 with st.spinner('Procesando tu voto...'):
                     try:
                         # Map the selected model and prepare data
-                        additional_labels = additional_gpt if model_choice == "Opción 1" else additional_rtm
+                        additional_labels = additional_labels
 
                         model_mapping = 0 if model_choice == "Opción 1" else 1
                         data_to_send = {
                             'vote_index': vote_index,
                             'vote_name': vote_name,
                             'chosen_model': model_mapping,
-                            'user_comment': user_comment,
-                            'consent_given': st.session_state.consent_given,
+                            'consent_given': st.session_state.user_agreement_given,
                             'expertise_level': st.session_state.expertise_level,
                             'additional_labels': additional_labels if additional_labels else []
                         }
@@ -296,6 +365,5 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
                         
                         # Rerun to refresh
                         st.experimental_rerun()
-                        
                     except Exception as e:
                         st.error(f"Error al procesar el voto: {str(e)}")

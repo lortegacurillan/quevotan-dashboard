@@ -12,10 +12,12 @@ from sklearn.utils import parallel_backend
 #Logging configuration
 logging.basicConfig(level=logging.DEBUG)
 
-#Load the model components
-loaded_model, loaded_vectorizer, loaded_scaler = load_model('RandomForestModel/multi_target_forest.pkl')
-loaded_model.n_jobs = 1 # Avoid thread conflicts
-
+try:
+    #Load the model components
+    loaded_model, loaded_vectorizer, loaded_scaler = load_model('RandomForestModel/multi_target_forest.pkl')
+    loaded_model.n_jobs = 1 # Avoid thread conflicts
+except Exception as e:
+    print(f"Error loading model: {e}")
 def get_QueryResponse(text: str, model=loaded_model, vectorizer=loaded_vectorizer, scaler=loaded_scaler)->np.ndarray:
     '''
     This function takes a text and returns the predicted labels for it
