@@ -237,8 +237,13 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
     
     # Get current vote data
     vote_index = st.session_state.selected_vote_index
-    vote_row = data.iloc[vote_index]
-    
+    vote_row = data[data['index'] == vote_index]
+
+    # Step 5: Extract components (example: vote_name and labels)
+    print('```````',vote_row,'```````````')
+    vote_name = vote_row[data.columns.get_loc('vote_Name')]
+    gpt_labels = vote_row[data.columns.get_loc('GPT_predictions_start_column'):data.columns.get_loc('GPT_predictions_end_column') + 1]
+    rtm_labels = vote_row[data.columns.get_loc('RTM_predictions_start_column'):data.columns.get_loc('RTM_predictions_end_column') + 1]
     # Modificar estilos en línea, asegurando consistencia
     st.markdown(f"""
         <div style="
@@ -276,8 +281,8 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
 
 
     # Filter and prepare predictions
-    gpt_labels = vote_row[[f"GPT_{label}" for label in labels]]
-    rtm_labels = vote_row[[f"RTM_{label}" for label in labels]]
+    #gpt_labels = vote_row[[f"GPT_{label}" for label in labels]]
+    #rtm_labels = vote_row[[f"RTM_{label}" for label in labels]]
     gpt_selected, gpt_unselected = filter_predictions(pd.DataFrame(gpt_labels).T, labels, model_type="GPT")
     rtm_selected, rtm_unselected = filter_predictions(pd.DataFrame(rtm_labels).T, labels, model_type="RTM")
 
@@ -342,6 +347,7 @@ def show_UserModelRanking(data: pd.DataFrame, softmax_Data: pd.DataFrame):
                         model_mapping = 0 if model_choice == "Opción 1" else 1
                         data_to_send = {
                             'vote_index': vote_index,
+                            'vote_general_index': vote_general_index,
                             'vote_name': vote_name,
                             'chosen_model': model_mapping,
                             'consent_given': st.session_state.user_agreement_given,

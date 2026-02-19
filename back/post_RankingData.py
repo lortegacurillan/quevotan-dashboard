@@ -66,7 +66,7 @@ def save_UserModelRanking_To_Postgres(data_To_Send: dict):
         else:
             # Create a new entry if it doesn't exist
             new_softmax_entry = VoteFrequencySoftmax(
-                vote_index=data_To_Send['vote_index'],
+                vote_index=data_To_Send['vote_general_index'],
                 vote_Name=data_To_Send['vote_name'],
                 appearance_count=1
             )
